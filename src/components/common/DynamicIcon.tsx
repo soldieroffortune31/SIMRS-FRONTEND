@@ -26,6 +26,12 @@ import {
   Home,
   Shield,
   LayoutDashboard,
+  MapPin,
+  UserPlus,
+  Calendar,
+  Clock,
+  Search,
+  Contact,
   LucideProps,
 } from 'lucide-react';
 
@@ -88,6 +94,19 @@ export default function DynamicIcon({ name, ...props }: DynamicIconProps) {
       return <Home {...props} />;
     case 'shield':
       return <Shield {...props} />;
+    case 'map-pin':
+      return <MapPin {...props} />;
+    case 'user-plus':
+      return <UserPlus {...props} />;
+    case 'calendar':
+      return <Calendar {...props} />;
+    case 'clock':
+      return <Clock {...props} />;
+    case 'search':
+      return <Search {...props} />;
+    case 'contact':
+    case 'id-card':
+      return <Contact {...props} />;
     default:
       return <FileText {...props} />;
   }

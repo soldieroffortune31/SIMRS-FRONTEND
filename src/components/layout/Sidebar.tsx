@@ -33,6 +33,7 @@ export default function Sidebar({
     30: true,
     40: true,
     50: true,
+    60: true,
   });
 
   const toggleExpand = (id: number) => {

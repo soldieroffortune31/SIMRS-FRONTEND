@@ -125,3 +125,205 @@ export interface TagihanKasirItem {
   total_tagihan: number;
   status_pembayaran: 'BELUM_LUNAS' | 'LUNAS';
 }
+
+// Wilayah Types
+export interface Provinsi {
+  id: number;
+  kode_provinsi: string;
+  nama_provinsi: string;
+  is_active: boolean;
+  kabupaten_kota?: KabupatenKota[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface KabupatenKota {
+  id: number;
+  provinsi_id: number;
+  kode_kabupaten: string;
+  nama_kabupaten: string;
+  tipe: 'KABUPATEN' | 'KOTA';
+  is_active: boolean;
+  provinsi?: Provinsi;
+  kecamatan?: Kecamatan[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface Kecamatan {
+  id: number;
+  kabupaten_id: number;
+  kode_kecamatan: string;
+  nama_kecamatan: string;
+  is_active: boolean;
+  kabupaten?: KabupatenKota;
+  desa_kelurahan?: DesaKelurahan[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface DesaKelurahan {
+  id: number;
+  kecamatan_id: number;
+  kode_desa: string;
+  nama_desa: string;
+  tipe: 'DESA' | 'KELURAHAN';
+  kode_pos?: string;
+  is_active: boolean;
+  kecamatan?: Kecamatan;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface KodePos {
+  id: number;
+  kode_pos: string;
+  provinsi_id?: number | null;
+  kabupaten_id?: number | null;
+  kecamatan_id?: number | null;
+  desa_id?: number | null;
+  keterangan?: string | null;
+  is_active: boolean;
+  provinsi?: Provinsi;
+  kabupaten?: KabupatenKota;
+  kecamatan?: Kecamatan;
+  desa?: DesaKelurahan;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// Pasien Types
+export interface Pasien {
+  id: string;
+  no_rm: string;
+  nik?: string;
+  nama_lengkap: string;
+  jenis_kelamin: 'L' | 'P';
+  tempat_lahir: string;
+  tanggal_lahir: string;
+  golongan_darah?: 'A' | 'B' | 'AB' | 'O' | 'TIDAK_TAHU';
+  agama?: string;
+  status_pernikahan?: 'BELUM_MENIKAH' | 'MENIKAH' | 'CERAI_HIDUP' | 'CERAI_MATI';
+  pendidikan?: string;
+  pekerjaan?: string;
+  no_telepon?: string;
+  email?: string;
+  alamat_lengkap: string;
+  rt?: string;
+  rw?: string;
+  provinsi_id?: number | null;
+  kabupaten_id?: number | null;
+  kecamatan_id?: number | null;
+  desa_id?: number | null;
+  kode_pos?: string;
+  nama_penanggung_jawab?: string;
+  hubungan_penanggung_jawab?: string;
+  telepon_penanggung_jawab?: string;
+  jenis_penjamin_default?: 'UMUM' | 'BPJS' | 'ASURANSI_SWASTA' | 'PERUSAHAAN';
+  no_kartu_penjamin_default?: string;
+  is_active: boolean;
+  provinsi?: Provinsi;
+  kabupaten?: KabupatenKota;
+  kecamatan?: Kecamatan;
+  desa?: DesaKelurahan;
+  kunjungan_rawat_jalan?: PendaftaranRawatJalan[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// Jadwal Dokter Types
+export interface JadwalDokter {
+  id: number;
+  dokter_id: string;
+  ruangan_id: number;
+  hari: 'SENIN' | 'SELASA' | 'RABU' | 'KAMIS' | 'JUMAT' | 'SABTU' | 'MINGGU';
+  jam_mulai: string;
+  jam_selesai: string;
+  kuota_pasien: number;
+  keterangan?: string;
+  is_active: boolean;
+  dokter?: {
+    id: string;
+    username: string;
+    nama_lengkap: string;
+    nip_nik?: string;
+  };
+  ruangan?: {
+    id: number;
+    kode_ruangan: string;
+    nama_ruangan: string;
+  };
+}
+
+// Pendaftaran Rawat Jalan Types
+export type StatusAntrean = 'MENUNGGU' | 'DIPANGGIL' | 'SEDANG_DILAYANI' | 'SELESAI' | 'BATAL';
+export type JenisPenjamin = 'UMUM' | 'BPJS' | 'ASURANSI_SWASTA' | 'PERUSAHAAN';
+
+export interface PendaftaranRawatJalan {
+  id: number;
+  no_registrasi: string;
+  no_antrean: string;
+  angka_antrean: number;
+  pasien_id: string;
+  tipe_pasien: 'BARU' | 'LAMA';
+  jadwal_dokter_id: number;
+  dokter_id: string;
+  ruangan_id: number;
+  tanggal_kunjungan: string;
+  jenis_penjamin: JenisPenjamin;
+  no_kartu_penjamin?: string | null;
+  keluhan_utama?: string | null;
+  catatan?: string | null;
+  status_antrean: StatusAntrean;
+  created_by?: string | null;
+  pasien?: Pasien;
+  dokter?: {
+    id: string;
+    nama_lengkap: string;
+    nip_nik?: string;
+  };
+  ruangan?: {
+    id: number;
+    kode_ruangan: string;
+    nama_ruangan: string;
+  };
+  jadwal_dokter?: JadwalDokter;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface PendaftaranRawatJalanPayload {
+  tipe_pasien: 'BARU' | 'LAMA';
+  pasien_id?: string;
+  pasien_baru?: {
+    nik?: string;
+    nama_lengkap: string;
+    jenis_kelamin: 'L' | 'P';
+    tempat_lahir: string;
+    tanggal_lahir: string;
+    golongan_darah?: string;
+    agama?: string;
+    status_pernikahan?: string;
+    pendidikan?: string;
+    pekerjaan?: string;
+    no_telepon?: string;
+    email?: string;
+    alamat_lengkap: string;
+    rt?: string;
+    rw?: string;
+    provinsi_id?: number | null;
+    kabupaten_id?: number | null;
+    kecamatan_id?: number | null;
+    desa_id?: number | null;
+    kode_pos?: string;
+    nama_penanggung_jawab?: string;
+    hubungan_penanggung_jawab?: string;
+    telepon_penanggung_jawab?: string;
+  };
+  jadwal_dokter_id: number;
+  tanggal_kunjungan: string;
+  jenis_penjamin: JenisPenjamin;
+  no_kartu_penjamin?: string;
+  keluhan_utama?: string;
+  catatan?: string;
+}

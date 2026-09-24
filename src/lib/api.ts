@@ -151,4 +151,191 @@ export const masterApi = {
   },
 };
 
+// Master Wilayah & Kode Pos Endpoints
+export const wilayahApi = {
+  // 1. Provinsi
+  getProvinsi: async (params?: { search?: string; is_active?: boolean; include_kabupaten?: boolean; page?: number; limit?: number }) => {
+    const res = await api.get<ApiResponse<any>>('/master/provinsi', { params });
+    return res.data;
+  },
+  getProvinsiById: async (id: number) => {
+    const res = await api.get<ApiResponse<any>>(`/master/provinsi/${id}`);
+    return res.data;
+  },
+  createProvinsi: async (data: { kode_provinsi: string; nama_provinsi: string; is_active?: boolean }) => {
+    const res = await api.post<ApiResponse<any>>('/master/provinsi', data);
+    return res.data;
+  },
+  updateProvinsi: async (id: number, data: Partial<{ kode_provinsi: string; nama_provinsi: string; is_active: boolean }>) => {
+    const res = await api.put<ApiResponse<any>>(`/master/provinsi/${id}`, data);
+    return res.data;
+  },
+  deleteProvinsi: async (id: number) => {
+    const res = await api.delete<ApiResponse<any>>(`/master/provinsi/${id}`);
+    return res.data;
+  },
+
+  // 2. Kabupaten / Kota
+  getKabupaten: async (params?: { provinsi_id?: number; tipe?: string; search?: string; is_active?: boolean; page?: number; limit?: number }) => {
+    const res = await api.get<ApiResponse<any>>('/master/kabupaten', { params });
+    return res.data;
+  },
+  getKabupatenById: async (id: number) => {
+    const res = await api.get<ApiResponse<any>>(`/master/kabupaten/${id}`);
+    return res.data;
+  },
+  createKabupaten: async (data: { provinsi_id: number; kode_kabupaten: string; nama_kabupaten: string; tipe?: 'KABUPATEN' | 'KOTA'; is_active?: boolean }) => {
+    const res = await api.post<ApiResponse<any>>('/master/kabupaten', data);
+    return res.data;
+  },
+  updateKabupaten: async (id: number, data: Partial<{ provinsi_id: number; kode_kabupaten: string; nama_kabupaten: string; tipe: 'KABUPATEN' | 'KOTA'; is_active: boolean }>) => {
+    const res = await api.put<ApiResponse<any>>(`/master/kabupaten/${id}`, data);
+    return res.data;
+  },
+  deleteKabupaten: async (id: number) => {
+    const res = await api.delete<ApiResponse<any>>(`/master/kabupaten/${id}`);
+    return res.data;
+  },
+
+  // 3. Kecamatan
+  getKecamatan: async (params?: { kabupaten_id?: number; search?: string; is_active?: boolean; page?: number; limit?: number }) => {
+    const res = await api.get<ApiResponse<any>>('/master/kecamatan', { params });
+    return res.data;
+  },
+  getKecamatanById: async (id: number) => {
+    const res = await api.get<ApiResponse<any>>(`/master/kecamatan/${id}`);
+    return res.data;
+  },
+  createKecamatan: async (data: { kabupaten_id: number; kode_kecamatan: string; nama_kecamatan: string; is_active?: boolean }) => {
+    const res = await api.post<ApiResponse<any>>('/master/kecamatan', data);
+    return res.data;
+  },
+  updateKecamatan: async (id: number, data: Partial<{ kabupaten_id: number; kode_kecamatan: string; nama_kecamatan: string; is_active: boolean }>) => {
+    const res = await api.put<ApiResponse<any>>(`/master/kecamatan/${id}`, data);
+    return res.data;
+  },
+  deleteKecamatan: async (id: number) => {
+    const res = await api.delete<ApiResponse<any>>(`/master/kecamatan/${id}`);
+    return res.data;
+  },
+
+  // 4. Desa / Kelurahan
+  getDesa: async (params?: { kecamatan_id?: number; tipe?: string; kode_pos?: string; search?: string; is_active?: boolean; page?: number; limit?: number }) => {
+    const res = await api.get<ApiResponse<any>>('/master/desa', { params });
+    return res.data;
+  },
+  getDesaById: async (id: number) => {
+    const res = await api.get<ApiResponse<any>>(`/master/desa/${id}`);
+    return res.data;
+  },
+  createDesa: async (data: { kecamatan_id: number; kode_desa: string; nama_desa: string; tipe?: 'DESA' | 'KELURAHAN'; kode_pos?: string; is_active?: boolean }) => {
+    const res = await api.post<ApiResponse<any>>('/master/desa', data);
+    return res.data;
+  },
+  updateDesa: async (id: number, data: Partial<{ kecamatan_id: number; kode_desa: string; nama_desa: string; tipe: 'DESA' | 'KELURAHAN'; kode_pos: string; is_active: boolean }>) => {
+    const res = await api.put<ApiResponse<any>>(`/master/desa/${id}`, data);
+    return res.data;
+  },
+  deleteDesa: async (id: number) => {
+    const res = await api.delete<ApiResponse<any>>(`/master/desa/${id}`);
+    return res.data;
+  },
+
+  // 5. Kode Pos
+  getKodePos: async (params?: { kode_pos?: string; desa_id?: number; kecamatan_id?: number; kabupaten_id?: number; provinsi_id?: number; search?: string; page?: number; limit?: number }) => {
+    const res = await api.get<ApiResponse<any>>('/master/kodepos', { params });
+    return res.data;
+  },
+  searchKodePos: async (kodePos: string) => {
+    const res = await api.get<ApiResponse<any>>(`/master/kodepos/search/${encodeURIComponent(kodePos)}`);
+    return res.data;
+  },
+  createKodePos: async (data: { kode_pos: string; provinsi_id?: number; kabupaten_id?: number; kecamatan_id?: number; desa_id?: number; keterangan?: string; is_active?: boolean }) => {
+    const res = await api.post<ApiResponse<any>>('/master/kodepos', data);
+    return res.data;
+  },
+  updateKodePos: async (id: number, data: Partial<{ kode_pos: string; provinsi_id: number; kabupaten_id: number; kecamatan_id: number; desa_id: number; keterangan: string; is_active: boolean }>) => {
+    const res = await api.put<ApiResponse<any>>(`/master/kodepos/${id}`, data);
+    return res.data;
+  },
+  deleteKodePos: async (id: number) => {
+    const res = await api.delete<ApiResponse<any>>(`/master/kodepos/${id}`);
+    return res.data;
+  },
+};
+
+// Pendaftaran Rawat Jalan & Pasien Endpoints
+export const pendaftaranApi = {
+  // Pasien
+  getAllPasien: async (params?: { search?: string; jenis_kelamin?: string; page?: number; limit?: number }) => {
+    const res = await api.get<ApiResponse<any>>('/pasien', { params });
+    console.log('kekek', res.data)
+    return res.data;
+  },
+  getPasienById: async (id: string) => {
+    const res = await api.get<ApiResponse<any>>(`/pasien/${id}`);
+    return res.data;
+  },
+  createPasien: async (data: any) => {
+    const res = await api.post<ApiResponse<any>>('/pasien', data);
+    return res.data;
+  },
+  updatePasien: async (id: string, data: any) => {
+    const res = await api.put<ApiResponse<any>>(`/pasien/${id}`, data);
+    return res.data;
+  },
+
+  // Jadwal Dokter
+  getAllJadwalDokter: async (params?: { ruangan_id?: number; dokter_id?: string; hari?: string; is_active?: boolean }) => {
+    const res = await api.get<ApiResponse<any>>('/jadwal-dokter', { params });
+    return res.data;
+  },
+  getJadwalDokterById: async (id: number) => {
+    const res = await api.get<ApiResponse<any>>(`/jadwal-dokter/${id}`);
+    return res.data;
+  },
+  createJadwalDokter: async (data: any) => {
+    const res = await api.post<ApiResponse<any>>('/jadwal-dokter', data);
+    return res.data;
+  },
+  updateJadwalDokter: async (id: number, data: any) => {
+    const res = await api.put<ApiResponse<any>>(`/jadwal-dokter/${id}`, data);
+    return res.data;
+  },
+  deleteJadwalDokter: async (id: number) => {
+    const res = await api.delete<ApiResponse<any>>(`/jadwal-dokter/${id}`);
+    return res.data;
+  },
+
+  // Registrasi & Antrean Rawat Jalan
+  daftarRawatJalan: async (data: any) => {
+    const res = await api.post<ApiResponse<any>>('/pendaftaran/rawat-jalan', data);
+    return res.data;
+  },
+  getAllPendaftaran: async (params?: {
+    tanggal_kunjungan?: string;
+    ruangan_id?: number;
+    dokter_id?: string;
+    status_antrean?: string;
+    jenis_penjamin?: string;
+    search?: string;
+    page?: number;
+    limit?: number;
+  }) => {
+    const res = await api.get<ApiResponse<any>>('/pendaftaran/rawat-jalan', { params });
+    return res.data;
+  },
+  getPendaftaranById: async (id: number) => {
+    const res = await api.get<ApiResponse<any>>(`/pendaftaran/rawat-jalan/${id}`);
+    return res.data;
+  },
+  updateStatusPendaftaran: async (id: number, status_antrean: string, catatan?: string) => {
+    const res = await api.patch<ApiResponse<any>>(`/pendaftaran/rawat-jalan/${id}/status`, {
+      status_antrean,
+      catatan,
+    });
+    return res.data;
+  },
+};
+
 export default api;

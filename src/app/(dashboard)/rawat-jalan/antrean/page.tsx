@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import NextLink from 'next/link';
 import { useAuth } from '@/context/AuthContext';
-import { pelayananApi } from '@/lib/api';
-import { AntreanPoliItem } from '@/lib/types';
+import { pelayananApi, pendaftaranApi } from '@/lib/api';
 import {
   Stethoscope,
   Users,
@@ -15,14 +15,16 @@ import {
   AlertTriangle,
   FileText,
   DoorOpen,
+  UserPlus,
+  ArrowRight,
 } from 'lucide-react';
 
 export default function AntreanPoliPage() {
   const { activeContext, openContextModal } = useAuth();
-  const [antreanList, setAntreanList] = useState<AntreanPoliItem[]>([]);
+  const [antreanList, setAntreanList] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'SEMUA' | 'MENUNGGU' | 'DIPERIKSA'>('SEMUA');
+  const [activeTab, setActiveTab] = useState<'SEMUA' | 'MENUNGGU' | 'DIPANGGIL' | 'SEDANG_DILAYANI' | 'SELESAI'>('SEMUA');
   const [calledPatient, setCalledPatient] = useState<string | null>(null);
 
   const isIRJ = activeContext?.instalasi.kode === 'IRJ';
@@ -31,16 +33,52 @@ export default function AntreanPoliPage() {
     setIsLoading(true);
     setErrorMsg(null);
     try {
-      const res = await pelayananApi.getAntreanPoli();
+      // 1. Attempt to fetch real registrations from pendaftaran rawat jalan
+      const today = new Date().toISOString().split('T')[0];
+      const params: any = { tanggal_kunjungan: today };
+      if (activeContext?.ruangan?.id) {
+        params.ruangan_id = activeContext.ruangan.id;
+      }
+      const res = await pendaftaranApi.getAllPendaftaran(params);
+
       if (res.data) {
-        setAntreanList(res.data);
+        const rows = Array.isArray(res.data) ? res.data : res.data.rows || [];
+        if (rows.length > 0) {
+          // Normalize to common format
+          const formatted = rows.map((r: any) => ({
+            id: r.id,
+            no_antrean: r.no_antrean,
+            no_rm: r.pasien?.no_rm || '-',
+            nama_pasien: r.pasien?.nama_lengkap || 'Pasien',
+            tipe_pasien: r.tipe_pasien,
+            jaminan: r.jenis_penjamin || 'UMUM',
+            status: r.status_antrean || 'MENUNGGU',
+            waktu_daftar: r.createdAt ? new Date(r.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '-',
+            ruangan_nama: r.ruangan?.nama_ruangan,
+            dokter_nama: r.dokter?.nama_lengkap,
+          }));
+          setAntreanList(formatted);
+          return;
+        }
+      }
+
+      // Fallback to legacy dummy service if empty
+      const legacyRes = await pelayananApi.getAntreanPoli();
+      if (legacyRes.data) {
+        setAntreanList(legacyRes.data);
       }
     } catch (err: any) {
       console.error('Failed to fetch antrean:', err);
-      setErrorMsg(
-        err.response?.data?.message ||
-          'Gagal memuat antrean poli. Pastikan Anda bertugas di Instalasi Rawat Jalan (IRJ).'
-      );
+      // Fallback
+      try {
+        const legacyRes = await pelayananApi.getAntreanPoli();
+        if (legacyRes.data) setAntreanList(legacyRes.data);
+      } catch (_) {
+        setErrorMsg(
+          err.response?.data?.message ||
+            'Gagal memuat antrean poli. Pastikan Anda bertugas di Instalasi Rawat Jalan (IRJ).'
+        );
+      }
     } finally {
       setIsLoading(false);
     }
@@ -50,12 +88,36 @@ export default function AntreanPoliPage() {
     fetchAntrean();
   }, [activeContext]);
 
-  const handleCall = (pasien: AntreanPoliItem) => {
+  const handleCall = async (pasien: any) => {
     setCalledPatient(pasien.no_antrean);
-    // Simulating audio call announcement
+    if (pasien.id) {
+      try {
+        await pendaftaranApi.updateStatusPendaftaran(pasien.id, 'DIPANGGIL');
+        fetchAntrean();
+      } catch (_) {}
+    }
+    // Audio call announcement simulation
     setTimeout(() => {
       setCalledPatient(null);
     }, 4000);
+  };
+
+  const handleLayani = async (pasien: any) => {
+    if (pasien.id) {
+      try {
+        await pendaftaranApi.updateStatusPendaftaran(pasien.id, 'SEDANG_DILAYANI');
+        fetchAntrean();
+      } catch (_) {}
+    }
+  };
+
+  const handleSelesai = async (pasien: any) => {
+    if (pasien.id) {
+      try {
+        await pendaftaranApi.updateStatusPendaftaran(pasien.id, 'SELESAI');
+        fetchAntrean();
+      } catch (_) {}
+    }
   };
 
   const filteredList = antreanList.filter((item) => {
@@ -81,6 +143,16 @@ export default function AntreanPoliPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          {(activeContext?.role?.kode === 'ADMIN' || activeContext?.role?.kode === 'PENDAFTARAN') && (
+            <NextLink
+              href="/pendaftaran/rawat-jalan"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold shadow-md shadow-sky-600/20 transition cursor-pointer"
+            >
+              <UserPlus className="w-4 h-4" />
+              + Pendaftaran Pasien Baru / Lama
+            </NextLink>
+          )}
+
           <button
             onClick={fetchAntrean}
             disabled={isLoading}
@@ -104,7 +176,7 @@ export default function AntreanPoliPage() {
           </div>
           <button
             onClick={openContextModal}
-            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shrink-0 transition"
+            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shrink-0 transition cursor-pointer"
           >
             <DoorOpen className="w-3.5 h-3.5" />
             Ganti ke Rawat Jalan
@@ -125,12 +197,12 @@ export default function AntreanPoliPage() {
       )}
 
       {/* Filter Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
-        {(['SEMUA', 'MENUNGGU', 'DIPERIKSA'] as const).map((tab) => (
+      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3 overflow-x-auto">
+        {(['SEMUA', 'MENUNGGU', 'DIPANGGIL', 'SEDANG_DILAYANI', 'SELESAI'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${
               activeTab === tab
                 ? 'bg-sky-600 text-white shadow-sm'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -171,12 +243,12 @@ export default function AntreanPoliPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
-                {filteredList.map((item) => (
+                {filteredList.map((item, idx) => (
                   <tr
-                    key={item.no_antrean}
+                    key={item.id || item.no_antrean || idx}
                     className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition"
                   >
-                    <td className="px-5 py-3.5 font-bold font-mono text-sky-600 dark:text-sky-400">
+                    <td className="px-5 py-3.5 font-bold font-mono text-sky-600 dark:text-sky-400 text-sm">
                       {item.no_antrean}
                     </td>
                     <td className="px-5 py-3.5 font-mono text-slate-700 dark:text-slate-300">
@@ -184,6 +256,11 @@ export default function AntreanPoliPage() {
                     </td>
                     <td className="px-5 py-3.5 font-bold text-slate-900 dark:text-white">
                       {item.nama_pasien}
+                      {item.tipe_pasien === 'BARU' && (
+                        <span className="ml-2 px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+                          BARU
+                        </span>
+                      )}
                     </td>
                     <td className="px-5 py-3.5">
                       <span
@@ -205,9 +282,13 @@ export default function AntreanPoliPage() {
                         className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                           item.status === 'MENUNGGU'
                             ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
-                            : item.status === 'DIPERIKSA'
-                            ? 'bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-300'
-                            : 'bg-emerald-100 text-emerald-800'
+                            : item.status === 'DIPANGGIL'
+                            ? 'bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-300 animate-pulse'
+                            : item.status === 'SEDANG_DILAYANI'
+                            ? 'bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300'
+                            : item.status === 'SELESAI'
+                            ? 'bg-emerald-100 text-emerald-800'
+                            : 'bg-rose-100 text-rose-800'
                         }`}
                       >
                         <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
@@ -218,19 +299,32 @@ export default function AntreanPoliPage() {
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => handleCall(item)}
-                          className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-sky-50 text-sky-700 hover:bg-sky-600 hover:text-white dark:bg-sky-950/60 dark:text-sky-300 border border-sky-200 dark:border-sky-800 transition font-semibold"
+                          className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-sky-50 text-sky-700 hover:bg-sky-600 hover:text-white dark:bg-sky-950/60 dark:text-sky-300 border border-sky-200 dark:border-sky-800 transition font-semibold cursor-pointer"
                           title="Panggil Pasien Melalui Speaker"
                         >
                           <PhoneCall className="w-3 h-3" />
                           <span>Panggil</span>
                         </button>
-                        <button
-                          className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-xs transition"
-                          title="Buka Rekam Medis EMR"
-                        >
-                          <FileText className="w-3 h-3" />
-                          <span>Periksa EMR</span>
-                        </button>
+                        {item.status !== 'SEDANG_DILAYANI' && item.status !== 'SELESAI' && (
+                          <button
+                            onClick={() => handleLayani(item)}
+                            className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-semibold shadow-xs transition cursor-pointer"
+                            title="Mulai Pemeriksaan Dokter"
+                          >
+                            <FileText className="w-3 h-3" />
+                            <span>Periksa</span>
+                          </button>
+                        )}
+                        {item.status === 'SEDANG_DILAYANI' && (
+                          <button
+                            onClick={() => handleSelesai(item)}
+                            className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-xs transition cursor-pointer"
+                            title="Selesai Pelayanan"
+                          >
+                            <CheckCircle2 className="w-3 h-3" />
+                            <span>Selesai</span>
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
