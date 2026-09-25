@@ -10,6 +10,7 @@ import {
   RefreshCw,
   UserPlus,
   Eye,
+  Trash2,
   FileText,
   MapPin,
   Phone,
@@ -17,6 +18,7 @@ import {
   Calendar,
   X,
   Shield,
+  AlertTriangle,
 } from 'lucide-react';
 
 export default function DataPasienPage() {
@@ -25,6 +27,14 @@ export default function DataPasienPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterJk, setFilterJk] = useState<'ALL' | 'L' | 'P'>('ALL');
   const [inspectedPasien, setInspectedPasien] = useState<Pasien | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: number; no_rm: string; nama_lengkap: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3500);
+  };
 
   const fetchPasien = useCallback(async () => {
     setIsLoading(true);
@@ -43,6 +53,7 @@ export default function DataPasienPage() {
       setPasienList(list);
     } catch (err) {
       console.error('Error fetching pasien:', err);
+      showToast('Gagal memuat data master pasien.', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -55,8 +66,39 @@ export default function DataPasienPage() {
     return () => clearTimeout(timer);
   }, [fetchPasien]);
 
+  const handleDeletePasien = async () => {
+    if (!deleteConfirm) return;
+    setIsDeleting(true);
+    try {
+      await pendaftaranApi.deletePasien(deleteConfirm.id);
+      showToast(`Data pasien ${deleteConfirm.nama_lengkap} (${deleteConfirm.no_rm}) berhasil dinonaktifkan/dihapus.`);
+      setDeleteConfirm(null);
+      if (inspectedPasien?.id === deleteConfirm.id) {
+        setInspectedPasien(null);
+      }
+      fetchPasien();
+    } catch (err: any) {
+      showToast(err.response?.data?.message || 'Gagal menghapus data pasien.', 'error');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
+      {/* Toast Alert */}
+      {toast && (
+        <div
+          className={`fixed bottom-6 right-6 z-50 px-4 py-3 rounded-2xl shadow-xl border text-xs font-semibold flex items-center gap-2 animate-in slide-in-from-bottom-5 ${
+            toast.type === 'success'
+              ? 'bg-emerald-500 text-white border-emerald-600'
+              : 'bg-rose-500 text-white border-rose-600'
+          }`}
+        >
+          <span>{toast.message}</span>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -68,7 +110,7 @@ export default function DataPasienPage() {
             Data Pasien Rekam Medis
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Database seluruh pasien rumah sakit terintegrasi nomor rekam medis dan master wilayah
+            Database seluruh pasien rumah sakit dengan penomoran ID Auto-Increment dan No. RM
           </p>
         </div>
 
@@ -138,7 +180,7 @@ export default function DataPasienPage() {
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-200 dark:border-slate-800">
                 <tr>
-                  <th className="px-5 py-3.5">No. RM</th>
+                  <th className="px-5 py-3.5">No. RM / ID</th>
                   <th className="px-5 py-3.5">NIK</th>
                   <th className="px-5 py-3.5">Nama Pasien</th>
                   <th className="px-5 py-3.5">JK / Lahir</th>
@@ -151,8 +193,13 @@ export default function DataPasienPage() {
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
                 {pasienList.map((p) => (
                   <tr key={p.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition">
-                    <td className="px-5 py-3.5 font-mono font-black text-sky-600 dark:text-sky-400 text-sm">
-                      {p.no_rm}
+                    <td className="px-5 py-3.5">
+                      <div className="font-mono font-black text-sky-600 dark:text-sky-400 text-sm">
+                        {p.no_rm}
+                      </div>
+                      <div className="text-[10px] font-mono text-slate-400">
+                        ID: #{p.id}
+                      </div>
                     </td>
                     <td className="px-5 py-3.5 font-mono text-slate-600 dark:text-slate-400">
                       {p.nik || '-'}
@@ -199,6 +246,19 @@ export default function DataPasienPage() {
                         >
                           Daftar RJ
                         </NextLink>
+                        <button
+                          onClick={() =>
+                            setDeleteConfirm({
+                              id: p.id,
+                              no_rm: p.no_rm,
+                              nama_lengkap: p.nama_lengkap,
+                            })
+                          }
+                          className="p-1 rounded-lg text-rose-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
+                          title="Hapus / Nonaktifkan Pasien"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -222,9 +282,14 @@ export default function DataPasienPage() {
                   <h3 className="text-base font-bold text-slate-900 dark:text-white">
                     {inspectedPasien.nama_lengkap}
                   </h3>
-                  <span className="font-mono text-xs font-bold text-sky-600 dark:text-sky-400">
-                    No. RM: {inspectedPasien.no_rm}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs font-bold text-sky-600 dark:text-sky-400">
+                      No. RM: {inspectedPasien.no_rm}
+                    </span>
+                    <span className="text-[10px] font-mono text-slate-400">
+                      (ID: #{inspectedPasien.id})
+                    </span>
+                  </div>
                 </div>
               </div>
               <button
@@ -286,12 +351,56 @@ export default function DataPasienPage() {
               </div>
             </div>
 
-            <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 flex items-center justify-end">
+            <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 flex items-center justify-end gap-2">
               <button
                 onClick={() => setInspectedPasien(null)}
                 className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-300 transition"
               >
                 Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL KONFIRMASI HAPUS PASIEN */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+          <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-5 text-xs animate-in zoom-in-95">
+            <div className="flex items-center gap-3 text-rose-600 mb-3">
+              <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/60 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-5 h-5 text-rose-600" />
+              </div>
+              <div>
+                <h4 className="font-bold text-sm text-slate-900 dark:text-white">
+                  Hapus Data Pasien
+                </h4>
+                <p className="text-slate-500 text-[11px]">
+                  Tindakan ini akan menonaktifkan data pasien (soft delete)
+                </p>
+              </div>
+            </div>
+
+            <p className="text-slate-600 dark:text-slate-300 mb-4">
+              Apakah Anda yakin ingin menghapus data pasien{' '}
+              <strong className="text-slate-900 dark:text-white">"{deleteConfirm.nama_lengkap}"</strong> ({deleteConfirm.no_rm} - ID: #{deleteConfirm.id})?
+            </p>
+
+            <div className="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirm(null)}
+                className="px-3.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold hover:bg-slate-200 transition"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={handleDeletePasien}
+                className="px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold shadow-md shadow-rose-600/20 transition disabled:opacity-50"
+              >
+                {isDeleting ? 'Menghapus...' : 'Ya, Hapus Pasien'}
               </button>
             </div>
           </div>

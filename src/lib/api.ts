@@ -7,6 +7,12 @@ import {
   SensusRawatInapItem,
   ResepFarmasiItem,
   TagihanKasirItem,
+  Instalasi,
+  Ruangan,
+  Role,
+  Pasien,
+  JadwalDokter,
+  PendaftaranRawatJalan,
 } from './types';
 
 const API_BASE_URL =
@@ -117,24 +123,84 @@ export const pelayananApi = {
   },
 };
 
-// Master Data Endpoints
+// Master Data Endpoints (Instalasi, Ruangan, Roles, Users, Modul)
 export const masterApi = {
+  // Instalasi Endpoints (/instalasi & /master/instalasi)
   getInstalasi: async (includeRuangan = false) => {
-    const res = await api.get<ApiResponse<any[]>>(`/master/instalasi?include_ruangan=${includeRuangan}`);
+    const res = await api.get<ApiResponse<Instalasi[]>>(`/instalasi?include_ruangan=${includeRuangan}`);
+    return res.data;
+  },
+  getInstalasiById: async (id: number) => {
+    const res = await api.get<ApiResponse<Instalasi>>(`/instalasi/${id}`);
+    return res.data;
+  },
+  createInstalasi: async (data: { kode_instalasi: string; nama_instalasi: string; is_active?: boolean }) => {
+    const res = await api.post<ApiResponse<Instalasi>>('/instalasi', data);
+    return res.data;
+  },
+  updateInstalasi: async (id: number, data: Partial<{ kode_instalasi: string; nama_instalasi: string; is_active: boolean }>) => {
+    const res = await api.put<ApiResponse<Instalasi>>(`/instalasi/${id}`, data);
+    return res.data;
+  },
+  deleteInstalasi: async (id: number) => {
+    const res = await api.delete<ApiResponse<any>>(`/instalasi/${id}`);
     return res.data;
   },
 
+  // Ruangan Endpoints (/ruangan & /master/ruangan)
   getRuangan: async (instalasiId?: number) => {
-    const url = instalasiId ? `/master/ruangan?instalasi_id=${instalasiId}` : '/master/ruangan';
-    const res = await api.get<ApiResponse<any[]>>(url);
+    const url = instalasiId ? `/ruangan?instalasi_id=${instalasiId}` : '/ruangan';
+    const res = await api.get<ApiResponse<Ruangan[]>>(url);
+    return res.data;
+  },
+  getRuanganById: async (id: number) => {
+    const res = await api.get<ApiResponse<Ruangan>>(`/ruangan/${id}`);
+    return res.data;
+  },
+  createRuangan: async (data: { instalasi_id: number; kode_ruangan: string; nama_ruangan: string; is_active?: boolean }) => {
+    const res = await api.post<ApiResponse<Ruangan>>('/ruangan', data);
+    return res.data;
+  },
+  updateRuangan: async (id: number, data: Partial<{ instalasi_id: number; kode_ruangan: string; nama_ruangan: string; is_active: boolean }>) => {
+    const res = await api.put<ApiResponse<Ruangan>>(`/ruangan/${id}`, data);
+    return res.data;
+  },
+  deleteRuangan: async (id: number) => {
+    const res = await api.delete<ApiResponse<any>>(`/ruangan/${id}`);
     return res.data;
   },
 
+  // Role Endpoints (/roles, /role & /master/roles)
   getRoles: async () => {
-    const res = await api.get<ApiResponse<any[]>>('/master/roles');
+    const res = await api.get<ApiResponse<Role[]>>('/roles');
+    return res.data;
+  },
+  getRoleById: async (id: number) => {
+    const res = await api.get<ApiResponse<Role>>(`/roles/${id}`);
+    return res.data;
+  },
+  createRole: async (data: { kode_role: string; nama_role: string; keterangan?: string }) => {
+    const res = await api.post<ApiResponse<Role>>('/roles', data);
+    return res.data;
+  },
+  updateRole: async (id: number, data: Partial<{ kode_role: string; nama_role: string; keterangan?: string }>) => {
+    const res = await api.put<ApiResponse<Role>>(`/roles/${id}`, data);
+    return res.data;
+  },
+  deleteRole: async (id: number) => {
+    const res = await api.delete<ApiResponse<any>>(`/roles/${id}`);
+    return res.data;
+  },
+  assignRolePermissions: async (id: number, permission_ids: number[]) => {
+    const res = await api.post<ApiResponse<any>>(`/roles/${id}/permissions`, { permission_ids });
+    return res.data;
+  },
+  assignRoleMenus: async (id: number, menu_ids: number[]) => {
+    const res = await api.post<ApiResponse<any>>(`/roles/${id}/menus`, { menu_ids });
     return res.data;
   },
 
+  // Users & Modules
   getUsers: async () => {
     const res = await api.get<ApiResponse<any[]>>('/users');
     return res.data;
@@ -266,40 +332,51 @@ export const wilayahApi = {
 
 // Pendaftaran Rawat Jalan & Pasien Endpoints
 export const pendaftaranApi = {
-  // Pasien
-  getAllPasien: async (params?: { search?: string; jenis_kelamin?: string; page?: number; limit?: number }) => {
-    const res = await api.get<ApiResponse<any>>('/pasien', { params });
-    console.log('kekek', res.data)
+  // Pasien Endpoints (/pasien)
+  getAllPasien: async (params?: { search?: string; jenis_kelamin?: string; is_active?: boolean; page?: number; limit?: number }) => {
+    const res = await api.get<ApiResponse<Pasien[]>>('/pasien', { params });
     return res.data;
   },
-  getPasienById: async (id: string) => {
-    const res = await api.get<ApiResponse<any>>(`/pasien/${id}`);
+  getPasienById: async (id: number | string) => {
+    const res = await api.get<ApiResponse<Pasien>>(`/pasien/${id}`);
+    return res.data;
+  },
+  getPasienByNoRM: async (no_rm: string) => {
+    const res = await api.get<ApiResponse<Pasien>>(`/pasien/no-rm/${encodeURIComponent(no_rm)}`);
+    return res.data;
+  },
+  getPasienByNIK: async (nik: string) => {
+    const res = await api.get<ApiResponse<Pasien>>(`/pasien/nik/${encodeURIComponent(nik)}`);
     return res.data;
   },
   createPasien: async (data: any) => {
-    const res = await api.post<ApiResponse<any>>('/pasien', data);
+    const res = await api.post<ApiResponse<Pasien>>('/pasien', data);
     return res.data;
   },
-  updatePasien: async (id: string, data: any) => {
-    const res = await api.put<ApiResponse<any>>(`/pasien/${id}`, data);
+  updatePasien: async (id: number | string, data: any) => {
+    const res = await api.put<ApiResponse<Pasien>>(`/pasien/${id}`, data);
+    return res.data;
+  },
+  deletePasien: async (id: number | string) => {
+    const res = await api.delete<ApiResponse<any>>(`/pasien/${id}`);
     return res.data;
   },
 
-  // Jadwal Dokter
-  getAllJadwalDokter: async (params?: { ruangan_id?: number; dokter_id?: string; hari?: string; is_active?: boolean }) => {
-    const res = await api.get<ApiResponse<any>>('/jadwal-dokter', { params });
+  // Jadwal Dokter Endpoints (/jadwal-dokter)
+  getAllJadwalDokter: async (params?: { ruangan_id?: number; dokter_id?: number; hari?: string; is_active?: boolean }) => {
+    const res = await api.get<ApiResponse<JadwalDokter[]>>('/jadwal-dokter', { params });
     return res.data;
   },
   getJadwalDokterById: async (id: number) => {
-    const res = await api.get<ApiResponse<any>>(`/jadwal-dokter/${id}`);
+    const res = await api.get<ApiResponse<JadwalDokter>>(`/jadwal-dokter/${id}`);
     return res.data;
   },
   createJadwalDokter: async (data: any) => {
-    const res = await api.post<ApiResponse<any>>('/jadwal-dokter', data);
+    const res = await api.post<ApiResponse<JadwalDokter>>('/jadwal-dokter', data);
     return res.data;
   },
   updateJadwalDokter: async (id: number, data: any) => {
-    const res = await api.put<ApiResponse<any>>(`/jadwal-dokter/${id}`, data);
+    const res = await api.put<ApiResponse<JadwalDokter>>(`/jadwal-dokter/${id}`, data);
     return res.data;
   },
   deleteJadwalDokter: async (id: number) => {
@@ -307,26 +384,26 @@ export const pendaftaranApi = {
     return res.data;
   },
 
-  // Registrasi & Antrean Rawat Jalan
+  // Registrasi & Antrean Rawat Jalan (/pendaftaran/rawat-jalan)
   daftarRawatJalan: async (data: any) => {
-    const res = await api.post<ApiResponse<any>>('/pendaftaran/rawat-jalan', data);
+    const res = await api.post<ApiResponse<PendaftaranRawatJalan>>('/pendaftaran/rawat-jalan', data);
     return res.data;
   },
   getAllPendaftaran: async (params?: {
     tanggal_kunjungan?: string;
     ruangan_id?: number;
-    dokter_id?: string;
+    dokter_id?: number;
     status_antrean?: string;
     jenis_penjamin?: string;
     search?: string;
     page?: number;
     limit?: number;
   }) => {
-    const res = await api.get<ApiResponse<any>>('/pendaftaran/rawat-jalan', { params });
+    const res = await api.get<ApiResponse<PendaftaranRawatJalan[]>>('/pendaftaran/rawat-jalan', { params });
     return res.data;
   },
   getPendaftaranById: async (id: number) => {
-    const res = await api.get<ApiResponse<any>>(`/pendaftaran/rawat-jalan/${id}`);
+    const res = await api.get<ApiResponse<PendaftaranRawatJalan>>(`/pendaftaran/rawat-jalan/${id}`);
     return res.data;
   },
   updateStatusPendaftaran: async (id: number, status_antrean: string, catatan?: string) => {

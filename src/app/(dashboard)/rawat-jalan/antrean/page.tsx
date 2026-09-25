@@ -42,7 +42,7 @@ export default function AntreanPoliPage() {
       const res = await pendaftaranApi.getAllPendaftaran(params);
 
       if (res.data) {
-        const rows = Array.isArray(res.data) ? res.data : res.data.rows || [];
+        const rows = Array.isArray(res.data) ? res.data : ((res.data as any)?.rows || []);
         if (rows.length > 0) {
           // Normalize to common format
           const formatted = rows.map((r: any) => ({

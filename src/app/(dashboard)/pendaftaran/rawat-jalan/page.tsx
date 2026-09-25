@@ -379,7 +379,7 @@ export default function PendaftaranRawatJalanPage() {
       };
 
       if (tipePasien === 'LAMA') {
-        payload.pasien_id = selectedPasienLama!.id;
+        payload.pasien_id = Number(selectedPasienLama!.id);
       } else {
         payload.pasien_baru = {
           ...pasienBaruForm,

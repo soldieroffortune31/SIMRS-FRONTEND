@@ -114,8 +114,13 @@ export default function PengaturanUsersPage() {
                     className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition"
                   >
                     <td className="px-5 py-3.5">
-                      <div className="font-bold text-slate-900 dark:text-white">
-                        {u.nama_lengkap}
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-slate-900 dark:text-white">
+                          {u.nama_lengkap}
+                        </span>
+                        <span className="text-[10px] font-mono text-slate-400">
+                          #{u.id}
+                        </span>
                       </div>
                       <div className="text-[11px] text-slate-500 font-mono">
                         @{u.username}
@@ -129,8 +134,8 @@ export default function PengaturanUsersPage() {
                     </td>
                     <td className="px-5 py-3.5">
                       <div className="flex flex-wrap gap-1.5">
-                        {u.user_ruangan_roles && u.user_ruangan_roles.length > 0 ? (
-                          u.user_ruangan_roles.map((assignment: any, idx: number) => (
+                        {((u.assignments || u.user_ruangan_roles) && (u.assignments || u.user_ruangan_roles).length > 0) ? (
+                          (u.assignments || u.user_ruangan_roles).map((assignment: any, idx: number) => (
                             <span
                               key={idx}
                               className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-[10px] text-slate-700 dark:text-slate-300 font-medium border border-slate-200 dark:border-slate-700"

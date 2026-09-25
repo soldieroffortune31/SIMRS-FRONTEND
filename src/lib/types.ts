@@ -1,10 +1,57 @@
 export interface User {
-  id: string;
+  id: number;
   username: string;
   nama_lengkap: string;
   nip_nik?: string;
   email?: string;
+  is_active?: boolean;
 }
+
+// Master Data Models (Auto Increment)
+export interface Instalasi {
+  id: number;
+  kode_instalasi: string;
+  nama_instalasi: string;
+  is_active: boolean;
+  ruangan?: Ruangan[];
+  ruangans?: Ruangan[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface Ruangan {
+  id: number;
+  instalasi_id: number;
+  kode_ruangan: string;
+  nama_ruangan: string;
+  is_active: boolean;
+  instalasi?: Instalasi;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface Permission {
+  id: number;
+  menu_id: number;
+  kode_permission: string;
+  nama_permission: string;
+  is_active?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface Role {
+  id: number;
+  kode_role: string;
+  nama_role: string;
+  keterangan?: string;
+  deskripsi?: string;
+  permissions?: Permission[];
+  menus?: MenuItem[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 
 export interface ContextInstalasi {
   id: number;
@@ -194,7 +241,7 @@ export interface KodePos {
 
 // Pasien Types
 export interface Pasien {
-  id: string;
+  id: number;
   no_rm: string;
   nik?: string;
   nama_lengkap: string;
@@ -234,7 +281,7 @@ export interface Pasien {
 // Jadwal Dokter Types
 export interface JadwalDokter {
   id: number;
-  dokter_id: string;
+  dokter_id: number;
   ruangan_id: number;
   hari: 'SENIN' | 'SELASA' | 'RABU' | 'KAMIS' | 'JUMAT' | 'SABTU' | 'MINGGU';
   jam_mulai: string;
@@ -243,7 +290,7 @@ export interface JadwalDokter {
   keterangan?: string;
   is_active: boolean;
   dokter?: {
-    id: string;
+    id: number;
     username: string;
     nama_lengkap: string;
     nip_nik?: string;
@@ -264,10 +311,10 @@ export interface PendaftaranRawatJalan {
   no_registrasi: string;
   no_antrean: string;
   angka_antrean: number;
-  pasien_id: string;
+  pasien_id: number;
   tipe_pasien: 'BARU' | 'LAMA';
   jadwal_dokter_id: number;
-  dokter_id: string;
+  dokter_id: number;
   ruangan_id: number;
   tanggal_kunjungan: string;
   jenis_penjamin: JenisPenjamin;
@@ -275,10 +322,10 @@ export interface PendaftaranRawatJalan {
   keluhan_utama?: string | null;
   catatan?: string | null;
   status_antrean: StatusAntrean;
-  created_by?: string | null;
+  created_by?: number | null;
   pasien?: Pasien;
   dokter?: {
-    id: string;
+    id: number;
     nama_lengkap: string;
     nip_nik?: string;
   };
@@ -294,7 +341,7 @@ export interface PendaftaranRawatJalan {
 
 export interface PendaftaranRawatJalanPayload {
   tipe_pasien: 'BARU' | 'LAMA';
-  pasien_id?: string;
+  pasien_id?: number;
   pasien_baru?: {
     nik?: string;
     nama_lengkap: string;
