@@ -102,7 +102,8 @@ export default function PengaturanRuanganPage() {
     setIsSubmitting(true);
     try {
       if (editingInstalasi) {
-        await masterApi.updateInstalasi(editingInstalasi.id, {
+        const instId = editingInstalasi.instalasi_id ?? editingInstalasi.id ?? 0;
+        await masterApi.updateInstalasi(instId, {
           kode_instalasi: instalasiForm.kode_instalasi.trim().toUpperCase(),
           nama_instalasi: instalasiForm.nama_instalasi.trim(),
           is_active: instalasiForm.is_active,
@@ -157,7 +158,8 @@ export default function PengaturanRuanganPage() {
     setIsSubmitting(true);
     try {
       if (editingRuangan) {
-        await masterApi.updateRuangan(editingRuangan.id, {
+        const rId = editingRuangan.ruangan_id ?? editingRuangan.id ?? 0;
+        await masterApi.updateRuangan(rId, {
           instalasi_id: Number(ruanganForm.instalasi_id),
           kode_ruangan: ruanganForm.kode_ruangan.trim().toUpperCase(),
           nama_ruangan: ruanganForm.nama_ruangan.trim(),
@@ -262,10 +264,11 @@ export default function PengaturanRuanganPage() {
       ) : (
         <div className="space-y-4">
           {instalasiList.map((inst) => {
+            const instId = inst.instalasi_id ?? inst.id ?? 0;
             const roomList = inst.ruangan || inst.ruangans || [];
             return (
               <div
-                key={inst.id}
+                key={instId}
                 className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs"
               >
                 {/* Instalasi Header */}
@@ -280,7 +283,7 @@ export default function PengaturanRuanganPage() {
                           {inst.nama_instalasi}
                         </h2>
                         <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
-                          ID: #{inst.id}
+                          ID: #{instId}
                         </span>
                       </div>
                       <p className="text-[11px] text-slate-500 mt-0.5">
@@ -298,7 +301,7 @@ export default function PengaturanRuanganPage() {
                     </span>
 
                     <button
-                      onClick={() => openRuanganModal(inst.id)}
+                      onClick={() => openRuanganModal(instId)}
                       className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-300 hover:bg-sky-100 text-xs font-semibold transition"
                       title="Tambah Ruangan ke Instalasi Ini"
                     >
@@ -318,7 +321,7 @@ export default function PengaturanRuanganPage() {
                       onClick={() =>
                         setDeleteConfirm({
                           type: 'instalasi',
-                          id: inst.id,
+                          id: instId,
                           name: inst.nama_instalasi,
                         })
                       }
@@ -333,9 +336,11 @@ export default function PengaturanRuanganPage() {
                 {/* Ruangan List Grid */}
                 <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {roomList.length > 0 ? (
-                    roomList.map((r: Ruangan) => (
+                    roomList.map((r: Ruangan) => {
+                      const rId = r.ruangan_id ?? r.id ?? 0;
+                      return (
                       <div
-                        key={r.id}
+                        key={rId}
                         className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 flex items-center justify-between group hover:border-sky-500/40 transition"
                       >
                         <div className="flex items-center gap-2.5">
@@ -346,7 +351,7 @@ export default function PengaturanRuanganPage() {
                                 {r.nama_ruangan}
                               </p>
                               <span className="text-[9px] font-mono text-slate-400">
-                                #{r.id}
+                                #{rId}
                               </span>
                             </div>
                             <p className="text-[10px] font-mono text-slate-500">
@@ -357,7 +362,7 @@ export default function PengaturanRuanganPage() {
 
                         <div className="flex items-center gap-1">
                           <button
-                            onClick={() => openRuanganModal(inst.id, r)}
+                            onClick={() => openRuanganModal(instId, r)}
                             className="p-1 rounded text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition"
                             title="Edit Ruangan"
                           >
@@ -367,7 +372,7 @@ export default function PengaturanRuanganPage() {
                             onClick={() =>
                               setDeleteConfirm({
                                 type: 'ruangan',
-                                id: r.id,
+                                id: rId,
                                 name: r.nama_ruangan,
                               })
                             }
@@ -378,7 +383,8 @@ export default function PengaturanRuanganPage() {
                           </button>
                         </div>
                       </div>
-                    ))
+                    );
+                    })
                   ) : (
                     <div className="col-span-full text-center py-4 text-xs text-slate-400">
                       Belum ada sub-ruangan pada instalasi ini. Klik <strong>+ Ruangan</strong> untuk menambahkan.
@@ -398,7 +404,7 @@ export default function PengaturanRuanganPage() {
             <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/60">
               <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <Building2 className="w-4 h-4 text-sky-600" />
-                {editingInstalasi ? `Edit Instalasi #${editingInstalasi.id}` : 'Tambah Instalasi Baru'}
+                {editingInstalasi ? `Edit Instalasi #${editingInstalasi.instalasi_id ?? editingInstalasi.id}` : 'Tambah Instalasi Baru'}
               </h3>
               <button
                 onClick={() => setIsInstalasiModalOpen(false)}
@@ -484,7 +490,7 @@ export default function PengaturanRuanganPage() {
             <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/60">
               <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <DoorOpen className="w-4 h-4 text-sky-600" />
-                {editingRuangan ? `Edit Ruangan #${editingRuangan.id}` : 'Tambah Ruangan Baru'}
+                {editingRuangan ? `Edit Ruangan #${editingRuangan.ruangan_id ?? editingRuangan.id}` : 'Tambah Ruangan Baru'}
               </h3>
               <button
                 onClick={() => setIsRuanganModalOpen(false)}
@@ -507,11 +513,14 @@ export default function PengaturanRuanganPage() {
                   }
                   className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:border-sky-500 font-medium"
                 >
-                  {instalasiList.map((inst) => (
-                    <option key={inst.id} value={inst.id}>
-                      {inst.nama_instalasi} ({inst.kode_instalasi}) - #{inst.id}
+                  {instalasiList.map((inst) => {
+                    const instId = inst.instalasi_id ?? inst.id;
+                    return (
+                    <option key={instId} value={instId}>
+                      {inst.nama_instalasi} ({inst.kode_instalasi}) - #{instId}
                     </option>
-                  ))}
+                  );
+                  })}
                 </select>
               </div>
 

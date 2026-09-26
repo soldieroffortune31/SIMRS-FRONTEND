@@ -36,8 +36,9 @@ export default function AntreanPoliPage() {
       // 1. Attempt to fetch real registrations from pendaftaran rawat jalan
       const today = new Date().toISOString().split('T')[0];
       const params: any = { tanggal_kunjungan: today };
-      if (activeContext?.ruangan?.id) {
-        params.ruangan_id = activeContext.ruangan.id;
+      const currentRuanganId = activeContext?.ruangan?.ruangan_id ?? activeContext?.ruangan?.id;
+      if (currentRuanganId) {
+        params.ruangan_id = currentRuanganId;
       }
       const res = await pendaftaranApi.getAllPendaftaran(params);
 
@@ -46,7 +47,8 @@ export default function AntreanPoliPage() {
         if (rows.length > 0) {
           // Normalize to common format
           const formatted = rows.map((r: any) => ({
-            id: r.id,
+            id: r.pendaftaran_id ?? r.id,
+            pendaftaran_id: r.pendaftaran_id ?? r.id,
             no_antrean: r.no_antrean,
             no_rm: r.pasien?.no_rm || '-',
             nama_pasien: r.pasien?.nama_lengkap || 'Pasien',
@@ -90,9 +92,10 @@ export default function AntreanPoliPage() {
 
   const handleCall = async (pasien: any) => {
     setCalledPatient(pasien.no_antrean);
-    if (pasien.id) {
+    const pendId = pasien.pendaftaran_id ?? pasien.id;
+    if (pendId) {
       try {
-        await pendaftaranApi.updateStatusPendaftaran(pasien.id, 'DIPANGGIL');
+        await pendaftaranApi.updateStatusPendaftaran(pendId, 'DIPANGGIL');
         fetchAntrean();
       } catch (_) {}
     }
@@ -103,18 +106,20 @@ export default function AntreanPoliPage() {
   };
 
   const handleLayani = async (pasien: any) => {
-    if (pasien.id) {
+    const pendId = pasien.pendaftaran_id ?? pasien.id;
+    if (pendId) {
       try {
-        await pendaftaranApi.updateStatusPendaftaran(pasien.id, 'SEDANG_DILAYANI');
+        await pendaftaranApi.updateStatusPendaftaran(pendId, 'SEDANG_DILAYANI');
         fetchAntrean();
       } catch (_) {}
     }
   };
 
   const handleSelesai = async (pasien: any) => {
-    if (pasien.id) {
+    const pendId = pasien.pendaftaran_id ?? pasien.id;
+    if (pendId) {
       try {
-        await pendaftaranApi.updateStatusPendaftaran(pasien.id, 'SELESAI');
+        await pendaftaranApi.updateStatusPendaftaran(pendId, 'SELESAI');
         fetchAntrean();
       } catch (_) {}
     }
@@ -245,7 +250,7 @@ export default function AntreanPoliPage() {
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
                 {filteredList.map((item, idx) => (
                   <tr
-                    key={item.id || item.no_antrean || idx}
+                    key={item.pendaftaran_id ?? item.id ?? item.no_antrean ?? idx}
                     className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition"
                   >
                     <td className="px-5 py-3.5 font-bold font-mono text-sky-600 dark:text-sky-400 text-sm">

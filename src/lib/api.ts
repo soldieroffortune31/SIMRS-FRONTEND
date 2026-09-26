@@ -67,7 +67,14 @@ export const authApi = {
     const payload = explicitContext
       ? { username, password, ...explicitContext }
       : { username, password };
-    const res = await api.post<ApiResponse<LoginResult>>('/auth/login', payload);
+    const res = await api.post<ApiResponse<LoginResult>>('/auth/login', payload, {
+      validateStatus: (status) => status < 500,
+    });
+    if (!res.data?.success && res.status >= 400) {
+      const err: any = new Error(res.data?.message || 'Username atau kata sandi tidak valid.');
+      err.response = res;
+      throw err;
+    }
     return res.data;
   },
 
@@ -76,16 +83,30 @@ export const authApi = {
     const res = await api.post<ApiResponse<LoginResult>>(
       '/auth/select-context',
       { instalasi_id, ruangan_id },
-      { headers }
+      { headers, validateStatus: (status) => status < 500 }
     );
+    if (!res.data?.success && res.status >= 400) {
+      const err: any = new Error(res.data?.message || 'Gagal memilih ruangan kerja.');
+      err.response = res;
+      throw err;
+    }
     return res.data;
   },
 
   switchContext: async (instalasi_id: number, ruangan_id: number) => {
-    const res = await api.post<ApiResponse<LoginResult>>('/auth/switch-context', {
-      instalasi_id,
-      ruangan_id,
-    });
+    const res = await api.post<ApiResponse<LoginResult>>(
+      '/auth/switch-context',
+      {
+        instalasi_id,
+        ruangan_id,
+      },
+      { validateStatus: (status) => status < 500 }
+    );
+    if (!res.data?.success && res.status >= 400) {
+      const err: any = new Error(res.data?.message || 'Gagal berganti ruangan kerja.');
+      err.response = res;
+      throw err;
+    }
     return res.data;
   },
 

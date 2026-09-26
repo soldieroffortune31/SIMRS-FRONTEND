@@ -1,8 +1,16 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { AssignedRuangan } from '@/lib/types';
 import { Building2, DoorOpen, Shield, CheckCircle, ArrowRight, X, Loader2 } from 'lucide-react';
+
+interface NormalizedInstalasi {
+  instalasi_id: number;
+  kode_instalasi: string;
+  nama_instalasi: string;
+  daftar_ruangan: AssignedRuangan[];
+}
 
 export default function ContextModal() {
   const {
@@ -21,10 +29,63 @@ export default function ContextModal() {
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  if (!isContextModalOpen) return null;
+  // Normalize available contexts: handles both grouped (with daftar_ruangan) and flat lists from backend
+  const normalizedInstalasiList: NormalizedInstalasi[] = useMemo(() => {
+    if (!availableContexts || availableContexts.length === 0) return [];
 
-  // Set default selection if not already selected
-  const defaultInstalasi = availableContexts[0];
+    // Check if items already have daftar_ruangan array
+    const hasGrouped = availableContexts.some(
+      (c: any) => Array.isArray(c.daftar_ruangan) && c.daftar_ruangan.length > 0
+    );
+
+    if (hasGrouped) {
+      return availableContexts.map((inst: any) => ({
+        instalasi_id: inst.instalasi_id ?? inst.id ?? 0,
+        kode_instalasi: inst.kode_instalasi || '',
+        nama_instalasi: inst.nama_instalasi || '',
+        daftar_ruangan: (inst.daftar_ruangan || []).map((r: any) => ({
+          ruangan_id: r.ruangan_id ?? r.id ?? 0,
+          kode_ruangan: r.kode_ruangan || '',
+          nama_ruangan: r.nama_ruangan || '',
+          role_id: r.role_id ?? 0,
+          kode_role: r.kode_role || '',
+          nama_role: r.nama_role || '',
+          is_default: Boolean(r.is_default),
+        })),
+      }));
+    }
+
+    // Flat list from backend: group by instalasi_id
+    const map = new Map<number, NormalizedInstalasi>();
+
+    for (const item of availableContexts) {
+      const instId = item.instalasi_id ?? item.id ?? 0;
+      if (!map.has(instId)) {
+        map.set(instId, {
+          instalasi_id: instId,
+          kode_instalasi: item.kode_instalasi || '',
+          nama_instalasi: item.nama_instalasi || '',
+          daftar_ruangan: [],
+        });
+      }
+
+      if (item.ruangan_id || item.nama_ruangan) {
+        map.get(instId)!.daftar_ruangan.push({
+          ruangan_id: item.ruangan_id ?? item.id ?? 0,
+          kode_ruangan: item.kode_ruangan || '',
+          nama_ruangan: item.nama_ruangan || '',
+          role_id: item.role_id ?? 0,
+          kode_role: item.kode_role || '',
+          nama_role: item.nama_role || '',
+          is_default: Boolean(item.is_default),
+        });
+      }
+    }
+
+    return Array.from(map.values());
+  }, [availableContexts]);
+
+  if (!isContextModalOpen) return null;
 
   const handleSelect = async (instalasiId: number, ruanganId: number) => {
     setSelectedInstalasiId(instalasiId);
@@ -88,12 +149,12 @@ export default function ContextModal() {
           </div>
 
           <div className="space-y-4">
-            {availableContexts.length === 0 ? (
+            {normalizedInstalasiList.length === 0 ? (
               <div className="text-center py-8 text-slate-400">
                 Tidak ada penugasan ruangan yang tersedia untuk akun ini.
               </div>
             ) : (
-              availableContexts.map((instalasi) => (
+              normalizedInstalasiList.map((instalasi) => (
                 <div
                   key={instalasi.instalasi_id}
                   className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden bg-slate-50/50 dark:bg-slate-800/30"
@@ -108,15 +169,17 @@ export default function ContextModal() {
                       </span>
                     </div>
                     <span className="text-xs text-slate-500">
-                      {instalasi.daftar_ruangan.length} Ruangan
+                      {(instalasi.daftar_ruangan || []).length} Ruangan
                     </span>
                   </div>
 
                   <div className="p-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {instalasi.daftar_ruangan.map((ruangan) => {
+                    {(instalasi.daftar_ruangan || []).map((ruangan) => {
+                      const activeRuanganId = activeContext?.ruangan.ruangan_id ?? activeContext?.ruangan.id;
+                      const activeInstalasiId = activeContext?.instalasi.instalasi_id ?? activeContext?.instalasi.id;
                       const isActive =
-                        activeContext?.ruangan.id === ruangan.ruangan_id &&
-                        activeContext?.instalasi.id === instalasi.instalasi_id;
+                        activeRuanganId === ruangan.ruangan_id &&
+                        activeInstalasiId === instalasi.instalasi_id;
                       const isProcessing =
                         submitting &&
                         selectedRuanganId === ruangan.ruangan_id &&

@@ -1,15 +1,19 @@
 export interface User {
-  id: number;
+  user_id?: number;
+  id?: number;
   username: string;
   nama_lengkap: string;
   nip_nik?: string;
   email?: string;
   is_active?: boolean;
+  assignments?: any[];
+  user_ruangan_roles?: any[];
 }
 
-// Master Data Models (Auto Increment)
+// Master Data Models (Entity-specific PKs aligned with SIMRS-BACKEND)
 export interface Instalasi {
-  id: number;
+  instalasi_id?: number;
+  id?: number;
   kode_instalasi: string;
   nama_instalasi: string;
   is_active: boolean;
@@ -20,7 +24,8 @@ export interface Instalasi {
 }
 
 export interface Ruangan {
-  id: number;
+  ruangan_id?: number;
+  id?: number;
   instalasi_id: number;
   kode_ruangan: string;
   nama_ruangan: string;
@@ -31,7 +36,8 @@ export interface Ruangan {
 }
 
 export interface Permission {
-  id: number;
+  permission_id?: number;
+  id?: number;
   menu_id: number;
   kode_permission: string;
   nama_permission: string;
@@ -41,7 +47,8 @@ export interface Permission {
 }
 
 export interface Role {
-  id: number;
+  role_id?: number;
+  id?: number;
   kode_role: string;
   nama_role: string;
   keterangan?: string;
@@ -52,23 +59,25 @@ export interface Role {
   updatedAt?: string;
 }
 
-
 export interface ContextInstalasi {
-  id: number;
+  instalasi_id?: number;
+  id?: number;
   kode: string;
-  nama: string;
+  nama?: string;
 }
 
 export interface ContextRuangan {
-  id: number;
+  ruangan_id?: number;
+  id?: number;
   kode: string;
-  nama: string;
+  nama?: string;
 }
 
 export interface ContextRole {
-  id: number;
+  role_id?: number;
+  id?: number;
   kode: string;
-  nama: string;
+  nama?: string;
 }
 
 export interface ActiveContext {
@@ -79,6 +88,7 @@ export interface ActiveContext {
 
 export interface AssignedRuangan {
   ruangan_id: number;
+  id?: number;
   kode_ruangan: string;
   nama_ruangan: string;
   role_id: number;
@@ -89,13 +99,23 @@ export interface AssignedRuangan {
 
 export interface AvailableContext {
   instalasi_id: number;
+  id?: number;
   kode_instalasi: string;
   nama_instalasi: string;
-  daftar_ruangan: AssignedRuangan[];
+  daftar_ruangan?: AssignedRuangan[];
+  assignment_id?: number;
+  ruangan_id?: number;
+  kode_ruangan?: string;
+  nama_ruangan?: string;
+  role_id?: number;
+  kode_role?: string;
+  nama_role?: string;
+  is_default?: boolean;
 }
 
 export interface MenuItem {
-  id: number;
+  menu_id?: number;
+  id?: number;
   parent_id: number | null;
   modul_id: number | null;
   kode_menu: string;
@@ -108,13 +128,15 @@ export interface MenuItem {
 }
 
 export interface ModuleItem {
-  id: number;
+  modul_id?: number;
+  id?: number;
   kode_modul: string;
   nama_modul: string;
   deskripsi: string;
   icon: string;
   order_index: number;
   is_active: boolean;
+  menus?: MenuItem[];
 }
 
 export interface LoginResult {
@@ -139,15 +161,18 @@ export interface ApiResponse<T = any> {
 
 // Pelayanan Types
 export interface AntreanPoliItem {
+  id?: number;
+  pendaftaran_id?: number;
   no_antrean: string;
   no_rm: string;
   nama_pasien: string;
   jaminan: string;
-  status: 'MENUNGGU' | 'DIPERIKSA' | 'SELESAI' | 'BATAL';
+  status: 'MENUNGGU' | 'DIPANGGIL' | 'SEDANG_DILAYANI' | 'SELESAI' | 'BATAL';
   waktu_daftar: string;
 }
 
 export interface SensusRawatInapItem {
+  id?: number;
   no_bed: string;
   no_rm: string;
   nama_pasien: string;
@@ -157,6 +182,7 @@ export interface SensusRawatInapItem {
 }
 
 export interface ResepFarmasiItem {
+  id?: number;
   no_resep: string;
   asal_ruangan: string;
   nama_pasien: string;
@@ -166,6 +192,7 @@ export interface ResepFarmasiItem {
 }
 
 export interface TagihanKasirItem {
+  id?: number;
   no_billing: string;
   no_rm: string;
   nama_pasien: string;
@@ -175,7 +202,8 @@ export interface TagihanKasirItem {
 
 // Wilayah Types
 export interface Provinsi {
-  id: number;
+  provinsi_id?: number;
+  id?: number;
   kode_provinsi: string;
   nama_provinsi: string;
   is_active: boolean;
@@ -185,7 +213,8 @@ export interface Provinsi {
 }
 
 export interface KabupatenKota {
-  id: number;
+  kabupaten_id?: number;
+  id?: number;
   provinsi_id: number;
   kode_kabupaten: string;
   nama_kabupaten: string;
@@ -198,7 +227,8 @@ export interface KabupatenKota {
 }
 
 export interface Kecamatan {
-  id: number;
+  kecamatan_id?: number;
+  id?: number;
   kabupaten_id: number;
   kode_kecamatan: string;
   nama_kecamatan: string;
@@ -210,7 +240,8 @@ export interface Kecamatan {
 }
 
 export interface DesaKelurahan {
-  id: number;
+  desa_id?: number;
+  id?: number;
   kecamatan_id: number;
   kode_desa: string;
   nama_desa: string;
@@ -223,7 +254,9 @@ export interface DesaKelurahan {
 }
 
 export interface KodePos {
-  id: number;
+  kodepos_id?: number;
+  kode_pos_id?: number;
+  id?: number;
   kode_pos: string;
   provinsi_id?: number | null;
   kabupaten_id?: number | null;
@@ -241,7 +274,8 @@ export interface KodePos {
 
 // Pasien Types
 export interface Pasien {
-  id: number;
+  pasien_id?: number;
+  id?: number;
   no_rm: string;
   nik?: string;
   nama_lengkap: string;
@@ -273,6 +307,7 @@ export interface Pasien {
   kabupaten?: KabupatenKota;
   kecamatan?: Kecamatan;
   desa?: DesaKelurahan;
+  pendaftaran?: PendaftaranRawatJalan[];
   kunjungan_rawat_jalan?: PendaftaranRawatJalan[];
   createdAt?: string;
   updatedAt?: string;
@@ -280,7 +315,9 @@ export interface Pasien {
 
 // Jadwal Dokter Types
 export interface JadwalDokter {
-  id: number;
+  jadwaldokter_id?: number;
+  jadwal_dokter_id?: number;
+  id?: number;
   dokter_id: number;
   ruangan_id: number;
   hari: 'SENIN' | 'SELASA' | 'RABU' | 'KAMIS' | 'JUMAT' | 'SABTU' | 'MINGGU';
@@ -290,13 +327,15 @@ export interface JadwalDokter {
   keterangan?: string;
   is_active: boolean;
   dokter?: {
-    id: number;
-    username: string;
+    user_id?: number;
+    id?: number;
+    username?: string;
     nama_lengkap: string;
     nip_nik?: string;
   };
   ruangan?: {
-    id: number;
+    ruangan_id?: number;
+    id?: number;
     kode_ruangan: string;
     nama_ruangan: string;
   };
@@ -307,13 +346,15 @@ export type StatusAntrean = 'MENUNGGU' | 'DIPANGGIL' | 'SEDANG_DILAYANI' | 'SELE
 export type JenisPenjamin = 'UMUM' | 'BPJS' | 'ASURANSI_SWASTA' | 'PERUSAHAAN';
 
 export interface PendaftaranRawatJalan {
-  id: number;
+  pendaftaran_id?: number;
+  id?: number;
   no_registrasi: string;
   no_antrean: string;
   angka_antrean: number;
   pasien_id: number;
   tipe_pasien: 'BARU' | 'LAMA';
-  jadwal_dokter_id: number;
+  jadwaldokter_id?: number;
+  jadwal_dokter_id?: number;
   dokter_id: number;
   ruangan_id: number;
   tanggal_kunjungan: string;
@@ -325,12 +366,14 @@ export interface PendaftaranRawatJalan {
   created_by?: number | null;
   pasien?: Pasien;
   dokter?: {
-    id: number;
+    user_id?: number;
+    id?: number;
     nama_lengkap: string;
     nip_nik?: string;
   };
   ruangan?: {
-    id: number;
+    ruangan_id?: number;
+    id?: number;
     kode_ruangan: string;
     nama_ruangan: string;
   };
@@ -367,10 +410,34 @@ export interface PendaftaranRawatJalanPayload {
     hubungan_penanggung_jawab?: string;
     telepon_penanggung_jawab?: string;
   };
-  jadwal_dokter_id: number;
+  jadwal_dokter_id?: number;
+  jadwaldokter_id?: number;
   tanggal_kunjungan: string;
   jenis_penjamin: JenisPenjamin;
   no_kartu_penjamin?: string;
   keluhan_utama?: string;
   catatan?: string;
 }
+
+// Primary Key Extraction Helper Functions
+export const getUserId = (user?: User | null): number => user?.user_id ?? user?.id ?? 0;
+export const getInstalasiId = (inst?: Instalasi | ContextInstalasi | AvailableContext | null): number =>
+  (inst as any)?.instalasi_id ?? (inst as any)?.id ?? 0;
+export const getRuanganId = (r?: Ruangan | ContextRuangan | AssignedRuangan | null): number =>
+  (r as any)?.ruangan_id ?? (r as any)?.id ?? 0;
+export const getRoleId = (role?: Role | ContextRole | null): number =>
+  (role as any)?.role_id ?? (role as any)?.id ?? 0;
+export const getPasienId = (p?: Pasien | null): number => p?.pasien_id ?? p?.id ?? 0;
+export const getJadwalDokterId = (j?: JadwalDokter | null): number =>
+  j?.jadwaldokter_id ?? j?.jadwal_dokter_id ?? j?.id ?? 0;
+export const getPendaftaranId = (p?: PendaftaranRawatJalan | null): number =>
+  p?.pendaftaran_id ?? p?.id ?? 0;
+export const getProvinsiId = (p?: Provinsi | null): number => p?.provinsi_id ?? p?.id ?? 0;
+export const getKabupatenId = (k?: KabupatenKota | null): number => k?.kabupaten_id ?? k?.id ?? 0;
+export const getKecamatanId = (kc?: Kecamatan | null): number => kc?.kecamatan_id ?? kc?.id ?? 0;
+export const getDesaId = (d?: DesaKelurahan | null): number => d?.desa_id ?? d?.id ?? 0;
+export const getKodePosId = (kp?: KodePos | null): number =>
+  kp?.kodepos_id ?? kp?.kode_pos_id ?? kp?.id ?? 0;
+export const getMenuId = (m?: MenuItem | null): number => m?.menu_id ?? m?.id ?? 0;
+export const getModulId = (m?: ModuleItem | null): number => m?.modul_id ?? m?.id ?? 0;
+

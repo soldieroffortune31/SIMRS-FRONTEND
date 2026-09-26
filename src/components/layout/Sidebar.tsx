@@ -117,16 +117,17 @@ export default function Sidebar({
             </div>
           ) : (
             menus.map((menu) => {
+              const menuId = menu.menu_id ?? menu.id ?? 0;
               const hasChildren = menu.children && menu.children.length > 0;
-              const isExpanded = expandedMenus[menu.id] ?? false;
+              const isExpanded = expandedMenus[menuId] ?? false;
               const isParentActive = isCurrentActive(menu.path);
 
               return (
-                <div key={menu.id} className="space-y-1">
+                <div key={menuId} className="space-y-1">
                   {hasChildren ? (
                     <div>
                       <button
-                        onClick={() => toggleExpand(menu.id)}
+                        onClick={() => toggleExpand(menuId)}
                         className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition-colors ${
                           isParentActive
                             ? 'text-sky-300 bg-slate-800/70'
@@ -151,10 +152,11 @@ export default function Sidebar({
                       {isExpanded && (
                         <div className="pl-6 pr-1 py-1 space-y-1 border-l-2 border-slate-800 ml-4 my-1">
                           {menu.children?.map((child) => {
+                            const childId = child.menu_id ?? child.id ?? child.path;
                             const isChildActive = pathname === child.path;
                             return (
                               <NextLink
-                                key={child.id}
+                                key={childId}
                                 href={child.path}
                                 onClick={onClose}
                                 className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-all ${

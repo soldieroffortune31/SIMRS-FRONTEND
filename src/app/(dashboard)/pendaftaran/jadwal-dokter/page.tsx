@@ -109,11 +109,14 @@ export default function JadwalDokterPage() {
               className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:border-sky-500"
             >
               <option value="">Semua Poliklinik</option>
-              {ruanganList.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.nama_ruangan} ({r.kode_ruangan})
-                </option>
-              ))}
+              {ruanganList.map((r) => {
+                const rId = r.ruangan_id ?? r.id;
+                return (
+                  <option key={rId} value={rId}>
+                    {r.nama_ruangan} ({r.kode_ruangan})
+                  </option>
+                );
+              })}
             </select>
           </div>
 
@@ -151,9 +154,11 @@ export default function JadwalDokterPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {jadwalList.map((j) => (
+          {jadwalList.map((j) => {
+            const jId = j.jadwaldokter_id ?? j.jadwal_dokter_id ?? j.id;
+            return (
             <div
-              key={j.id}
+              key={jId}
               className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs hover:border-sky-500/50 hover:shadow-md transition space-y-4"
             >
               <div className="flex items-start justify-between">
@@ -212,7 +217,8 @@ export default function JadwalDokterPage() {
                 </NextLink>
               </div>
             </div>
-          ))}
+          );
+          })}
         </div>
       )}
     </div>

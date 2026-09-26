@@ -231,7 +231,7 @@ export default function PengaturanWilayahPage() {
           await wilayahApi.createProvinsi(formData);
           showToast('Data Provinsi berhasil ditambahkan');
         } else {
-          await wilayahApi.updateProvinsi(formData.id, formData);
+          await wilayahApi.updateProvinsi(formData.provinsi_id ?? formData.id, formData);
           showToast('Data Provinsi berhasil diperbarui');
         }
         await fetchProvinsi();
@@ -240,7 +240,7 @@ export default function PengaturanWilayahPage() {
           await wilayahApi.createKabupaten(formData);
           showToast('Data Kabupaten/Kota berhasil ditambahkan');
         } else {
-          await wilayahApi.updateKabupaten(formData.id, formData);
+          await wilayahApi.updateKabupaten(formData.kabupaten_id ?? formData.id, formData);
           showToast('Data Kabupaten/Kota berhasil diperbarui');
         }
         await fetchKabupaten();
@@ -249,7 +249,7 @@ export default function PengaturanWilayahPage() {
           await wilayahApi.createKecamatan(formData);
           showToast('Data Kecamatan berhasil ditambahkan');
         } else {
-          await wilayahApi.updateKecamatan(formData.id, formData);
+          await wilayahApi.updateKecamatan(formData.kecamatan_id ?? formData.id, formData);
           showToast('Data Kecamatan berhasil diperbarui');
         }
         await fetchKecamatan();
@@ -258,7 +258,7 @@ export default function PengaturanWilayahPage() {
           await wilayahApi.createDesa(formData);
           showToast('Data Desa/Kelurahan berhasil ditambahkan');
         } else {
-          await wilayahApi.updateDesa(formData.id, formData);
+          await wilayahApi.updateDesa(formData.desa_id ?? formData.id, formData);
           showToast('Data Desa/Kelurahan berhasil diperbarui');
         }
         await fetchDesa();
@@ -267,7 +267,7 @@ export default function PengaturanWilayahPage() {
           await wilayahApi.createKodePos(formData);
           showToast('Data Kode Pos berhasil ditambahkan');
         } else {
-          await wilayahApi.updateKodePos(formData.id, formData);
+          await wilayahApi.updateKodePos(formData.kodepos_id ?? formData.id, formData);
           showToast('Data Kode Pos berhasil diperbarui');
         }
         await fetchKodePos();
@@ -553,11 +553,14 @@ export default function PengaturanWilayahPage() {
                 className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:border-sky-500"
               >
                 <option value="">Semua Provinsi</option>
-                {provinsiList.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.kode_provinsi} - {p.nama_provinsi}
-                  </option>
-                ))}
+                {provinsiList.map((p) => {
+                  const pId = p.provinsi_id ?? p.id;
+                  return (
+                    <option key={pId} value={pId}>
+                      {p.kode_provinsi} - {p.nama_provinsi}
+                    </option>
+                  );
+                })}
               </select>
             </div>
           )}
@@ -576,11 +579,14 @@ export default function PengaturanWilayahPage() {
                 className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:border-sky-500"
               >
                 <option value="">Semua Kab/Kota</option>
-                {kabupatenList.map((k) => (
-                  <option key={k.id} value={k.id}>
-                    {k.tipe} {k.nama_kabupaten}
-                  </option>
-                ))}
+                {kabupatenList.map((k) => {
+                  const kId = k.kabupaten_id ?? k.id;
+                  return (
+                    <option key={kId} value={kId}>
+                      {k.tipe} {k.nama_kabupaten}
+                    </option>
+                  );
+                })}
               </select>
             </div>
           )}
@@ -595,11 +601,14 @@ export default function PengaturanWilayahPage() {
                 className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:border-sky-500"
               >
                 <option value="">Semua Kecamatan</option>
-                {kecamatanList.map((kc) => (
-                  <option key={kc.id} value={kc.id}>
-                    {kc.nama_kecamatan}
-                  </option>
-                ))}
+                {kecamatanList.map((kc) => {
+                  const kcId = kc.kecamatan_id ?? kc.id;
+                  return (
+                    <option key={kcId} value={kcId}>
+                      {kc.nama_kecamatan}
+                    </option>
+                  );
+                })}
               </select>
             </div>
           )}
@@ -685,64 +694,67 @@ export default function PengaturanWilayahPage() {
                       </td>
                     </tr>
                   ) : (
-                    filteredProvinsi.map((prov) => (
-                      <tr key={prov.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition">
-                        <td className="px-5 py-3.5 font-mono font-bold text-sky-600 dark:text-sky-400">
-                          {prov.kode_provinsi}
-                        </td>
-                        <td className="px-5 py-3.5 font-bold text-slate-900 dark:text-white">
-                          {prov.nama_provinsi}
-                        </td>
-                        <td className="px-5 py-3.5">
-                          <button
-                            onClick={() => {
-                              setSelectedProvinsiId(prov.id);
-                              setActiveTab('kabupaten');
-                            }}
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 hover:bg-sky-100 transition font-semibold"
-                          >
-                            <span>{prov.kabupaten_kota?.length || 0} Kab/Kota</span>
-                            <ArrowRight className="w-3 h-3" />
-                          </button>
-                        </td>
-                        <td className="px-5 py-3.5">
-                          <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                              prov.is_active
-                                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                                : 'bg-slate-100 text-slate-600'
-                            }`}
-                          >
-                            {prov.is_active ? 'Aktif' : 'Nonaktif'}
-                          </span>
-                        </td>
-                        <td className="px-5 py-3.5 text-right">
-                          <div className="flex items-center justify-end gap-1.5">
+                    filteredProvinsi.map((prov) => {
+                      const provId = prov.provinsi_id ?? prov.id ?? 0;
+                      return (
+                        <tr key={provId} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition">
+                          <td className="px-5 py-3.5 font-mono font-bold text-sky-600 dark:text-sky-400">
+                            {prov.kode_provinsi}
+                          </td>
+                          <td className="px-5 py-3.5 font-bold text-slate-900 dark:text-white">
+                            {prov.nama_provinsi}
+                          </td>
+                          <td className="px-5 py-3.5">
                             <button
-                              onClick={() => openEditModal('provinsi', prov)}
-                              className="p-1.5 rounded-lg text-slate-500 hover:text-sky-600 hover:bg-slate-100 transition"
-                              title="Edit Provinsi"
+                              onClick={() => {
+                                setSelectedProvinsiId(provId);
+                                setActiveTab('kabupaten');
+                              }}
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 hover:bg-sky-100 transition font-semibold"
                             >
-                              <Edit2 className="w-3.5 h-3.5" />
+                              <span>{prov.kabupaten_kota?.length || 0} Kab/Kota</span>
+                              <ArrowRight className="w-3 h-3" />
                             </button>
-                            <button
-                              onClick={() =>
-                                setDeleteConfirm({
-                                  isOpen: true,
-                                  tab: 'provinsi',
-                                  id: prov.id,
-                                  title: `Provinsi ${prov.nama_provinsi}`,
-                                })
-                              }
-                              className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition"
-                              title="Hapus Provinsi"
+                          </td>
+                          <td className="px-5 py-3.5">
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                prov.is_active
+                                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                                  : 'bg-slate-100 text-slate-600'
+                              }`}
                             >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
+                              {prov.is_active ? 'Aktif' : 'Nonaktif'}
+                            </span>
+                          </td>
+                          <td className="px-5 py-3.5 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                onClick={() => openEditModal('provinsi', prov)}
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-sky-600 hover:bg-slate-100 transition"
+                                title="Edit Provinsi"
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() =>
+                                  setDeleteConfirm({
+                                    isOpen: true,
+                                    tab: 'provinsi',
+                                    id: provId,
+                                    title: `Provinsi ${prov.nama_provinsi}`,
+                                  })
+                                }
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition"
+                                title="Hapus Provinsi"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>
@@ -769,76 +781,79 @@ export default function PengaturanWilayahPage() {
                       </td>
                     </tr>
                   ) : (
-                    filteredKabupaten.map((kab) => (
-                      <tr key={kab.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition">
-                        <td className="px-5 py-3.5 font-mono font-bold text-sky-600 dark:text-sky-400">
-                          {kab.kode_kabupaten}
-                        </td>
-                        <td className="px-5 py-3.5">
-                          <span
-                            className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                              kab.tipe === 'KOTA'
-                                ? 'bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300'
-                                : 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300'
-                            }`}
-                          >
-                            {kab.tipe}
-                          </span>
-                        </td>
-                        <td className="px-5 py-3.5 font-bold text-slate-900 dark:text-white">
-                          {kab.nama_kabupaten}
-                        </td>
-                        <td className="px-5 py-3.5 text-slate-600 dark:text-slate-300">
-                          {kab.provinsi?.nama_provinsi || '-'}
-                        </td>
-                        <td className="px-5 py-3.5">
-                          <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                              kab.is_active
-                                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                                : 'bg-slate-100 text-slate-600'
-                            }`}
-                          >
-                            {kab.is_active ? 'Aktif' : 'Nonaktif'}
-                          </span>
-                        </td>
-                        <td className="px-5 py-3.5 text-right">
-                          <div className="flex items-center justify-end gap-1.5">
-                            <button
-                              onClick={() => {
-                                setSelectedKabupatenId(kab.id);
-                                setActiveTab('kecamatan');
-                              }}
-                              className="px-2 py-1 rounded-lg text-[11px] font-semibold text-sky-600 hover:bg-sky-50 transition"
-                              title="Lihat Kecamatan"
+                    filteredKabupaten.map((kab) => {
+                      const kabId = kab.kabupaten_id ?? kab.id ?? 0;
+                      return (
+                        <tr key={kabId} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition">
+                          <td className="px-5 py-3.5 font-mono font-bold text-sky-600 dark:text-sky-400">
+                            {kab.kode_kabupaten}
+                          </td>
+                          <td className="px-5 py-3.5">
+                            <span
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                kab.tipe === 'KOTA'
+                                  ? 'bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300'
+                                  : 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300'
+                              }`}
                             >
-                              Kecamatan &rarr;
-                            </button>
-                            <button
-                              onClick={() => openEditModal('kabupaten', kab)}
-                              className="p-1.5 rounded-lg text-slate-500 hover:text-sky-600 hover:bg-slate-100 transition"
-                              title="Edit Kabupaten"
+                              {kab.tipe}
+                            </span>
+                          </td>
+                          <td className="px-5 py-3.5 font-bold text-slate-900 dark:text-white">
+                            {kab.nama_kabupaten}
+                          </td>
+                          <td className="px-5 py-3.5 text-slate-600 dark:text-slate-300">
+                            {kab.provinsi?.nama_provinsi || '-'}
+                          </td>
+                          <td className="px-5 py-3.5">
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                kab.is_active
+                                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                                  : 'bg-slate-100 text-slate-600'
+                              }`}
                             >
-                              <Edit2 className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              onClick={() =>
-                                setDeleteConfirm({
-                                  isOpen: true,
-                                  tab: 'kabupaten',
-                                  id: kab.id,
-                                  title: `${kab.tipe} ${kab.nama_kabupaten}`,
-                                })
-                              }
-                              className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition"
-                              title="Hapus Kabupaten"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
+                              {kab.is_active ? 'Aktif' : 'Nonaktif'}
+                            </span>
+                          </td>
+                          <td className="px-5 py-3.5 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                onClick={() => {
+                                  setSelectedKabupatenId(kabId);
+                                  setActiveTab('kecamatan');
+                                }}
+                                className="px-2 py-1 rounded-lg text-[11px] font-semibold text-sky-600 hover:bg-sky-50 transition"
+                                title="Lihat Kecamatan"
+                              >
+                                Kecamatan &rarr;
+                              </button>
+                              <button
+                                onClick={() => openEditModal('kabupaten', kab)}
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-sky-600 hover:bg-slate-100 transition"
+                                title="Edit Kabupaten"
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() =>
+                                  setDeleteConfirm({
+                                    isOpen: true,
+                                    tab: 'kabupaten',
+                                    id: kabId,
+                                    title: `${kab.tipe} ${kab.nama_kabupaten}`,
+                                  })
+                                }
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition"
+                                title="Hapus Kabupaten"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>
@@ -864,65 +879,68 @@ export default function PengaturanWilayahPage() {
                       </td>
                     </tr>
                   ) : (
-                    filteredKecamatan.map((kec) => (
-                      <tr key={kec.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition">
-                        <td className="px-5 py-3.5 font-mono font-bold text-sky-600 dark:text-sky-400">
-                          {kec.kode_kecamatan}
-                        </td>
-                        <td className="px-5 py-3.5 font-bold text-slate-900 dark:text-white">
-                          {kec.nama_kecamatan}
-                        </td>
-                        <td className="px-5 py-3.5 text-slate-600 dark:text-slate-300">
-                          {kec.kabupaten ? `${kec.kabupaten.tipe} ${kec.kabupaten.nama_kabupaten}` : '-'}
-                        </td>
-                        <td className="px-5 py-3.5">
-                          <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                              kec.is_active
-                                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                                : 'bg-slate-100 text-slate-600'
-                            }`}
-                          >
-                            {kec.is_active ? 'Aktif' : 'Nonaktif'}
-                          </span>
-                        </td>
-                        <td className="px-5 py-3.5 text-right">
-                          <div className="flex items-center justify-end gap-1.5">
-                            <button
-                              onClick={() => {
-                                setSelectedKecamatanId(kec.id);
-                                setActiveTab('desa');
-                              }}
-                              className="px-2 py-1 rounded-lg text-[11px] font-semibold text-sky-600 hover:bg-sky-50 transition"
-                              title="Lihat Desa/Kelurahan"
+                    filteredKecamatan.map((kec) => {
+                      const kecId = kec.kecamatan_id ?? kec.id ?? 0;
+                      return (
+                        <tr key={kecId} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition">
+                          <td className="px-5 py-3.5 font-mono font-bold text-sky-600 dark:text-sky-400">
+                            {kec.kode_kecamatan}
+                          </td>
+                          <td className="px-5 py-3.5 font-bold text-slate-900 dark:text-white">
+                            {kec.nama_kecamatan}
+                          </td>
+                          <td className="px-5 py-3.5 text-slate-600 dark:text-slate-300">
+                            {kec.kabupaten ? `${kec.kabupaten.tipe} ${kec.kabupaten.nama_kabupaten}` : '-'}
+                          </td>
+                          <td className="px-5 py-3.5">
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                kec.is_active
+                                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                                  : 'bg-slate-100 text-slate-600'
+                              }`}
                             >
-                              Desa &rarr;
-                            </button>
-                            <button
-                              onClick={() => openEditModal('kecamatan', kec)}
-                              className="p-1.5 rounded-lg text-slate-500 hover:text-sky-600 hover:bg-slate-100 transition"
-                              title="Edit Kecamatan"
-                            >
-                              <Edit2 className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              onClick={() =>
-                                setDeleteConfirm({
-                                  isOpen: true,
-                                  tab: 'kecamatan',
-                                  id: kec.id,
-                                  title: `Kecamatan ${kec.nama_kecamatan}`,
-                                })
-                              }
-                              className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition"
-                              title="Hapus Kecamatan"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
+                              {kec.is_active ? 'Aktif' : 'Nonaktif'}
+                            </span>
+                          </td>
+                          <td className="px-5 py-3.5 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                onClick={() => {
+                                  setSelectedKecamatanId(kecId);
+                                  setActiveTab('desa');
+                                }}
+                                className="px-2 py-1 rounded-lg text-[11px] font-semibold text-sky-600 hover:bg-sky-50 transition"
+                                title="Lihat Desa/Kelurahan"
+                              >
+                                Desa &rarr;
+                              </button>
+                              <button
+                                onClick={() => openEditModal('kecamatan', kec)}
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-sky-600 hover:bg-slate-100 transition"
+                                title="Edit Kecamatan"
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() =>
+                                  setDeleteConfirm({
+                                    isOpen: true,
+                                    tab: 'kecamatan',
+                                    id: kecId,
+                                    title: `Kecamatan ${kec.nama_kecamatan}`,
+                                  })
+                                }
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition"
+                                title="Hapus Kecamatan"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>
@@ -950,69 +968,72 @@ export default function PengaturanWilayahPage() {
                       </td>
                     </tr>
                   ) : (
-                    filteredDesa.map((d) => (
-                      <tr key={d.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition">
-                        <td className="px-5 py-3.5 font-mono font-bold text-sky-600 dark:text-sky-400">
-                          {d.kode_desa}
-                        </td>
-                        <td className="px-5 py-3.5">
-                          <span
-                            className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                              d.tipe === 'KELURAHAN'
-                                ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
-                                : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                            }`}
-                          >
-                            {d.tipe}
-                          </span>
-                        </td>
-                        <td className="px-5 py-3.5 font-bold text-slate-900 dark:text-white">
-                          {d.nama_desa}
-                        </td>
-                        <td className="px-5 py-3.5 text-slate-600 dark:text-slate-300">
-                          Kec. {d.kecamatan?.nama_kecamatan || '-'}
-                        </td>
-                        <td className="px-5 py-3.5 font-mono font-semibold text-slate-700 dark:text-slate-200">
-                          {d.kode_pos || '-'}
-                        </td>
-                        <td className="px-5 py-3.5">
-                          <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                              d.is_active
-                                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                                : 'bg-slate-100 text-slate-600'
-                            }`}
-                          >
-                            {d.is_active ? 'Aktif' : 'Nonaktif'}
-                          </span>
-                        </td>
-                        <td className="px-5 py-3.5 text-right">
-                          <div className="flex items-center justify-end gap-1.5">
-                            <button
-                              onClick={() => openEditModal('desa', d)}
-                              className="p-1.5 rounded-lg text-slate-500 hover:text-sky-600 hover:bg-slate-100 transition"
-                              title="Edit Desa"
+                    filteredDesa.map((d) => {
+                      const dId = d.desa_id ?? d.id ?? 0;
+                      return (
+                        <tr key={dId} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition">
+                          <td className="px-5 py-3.5 font-mono font-bold text-sky-600 dark:text-sky-400">
+                            {d.kode_desa}
+                          </td>
+                          <td className="px-5 py-3.5">
+                            <span
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                d.tipe === 'KELURAHAN'
+                                  ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                                  : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                              }`}
                             >
-                              <Edit2 className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              onClick={() =>
-                                setDeleteConfirm({
-                                  isOpen: true,
-                                  tab: 'desa',
-                                  id: d.id,
-                                  title: `${d.tipe} ${d.nama_desa}`,
-                                })
-                              }
-                              className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition"
-                              title="Hapus Desa"
+                              {d.tipe}
+                            </span>
+                          </td>
+                          <td className="px-5 py-3.5 font-bold text-slate-900 dark:text-white">
+                            {d.nama_desa}
+                          </td>
+                          <td className="px-5 py-3.5 text-slate-600 dark:text-slate-300">
+                            Kec. {d.kecamatan?.nama_kecamatan || '-'}
+                          </td>
+                          <td className="px-5 py-3.5 font-mono font-semibold text-slate-700 dark:text-slate-200">
+                            {d.kode_pos || '-'}
+                          </td>
+                          <td className="px-5 py-3.5">
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                d.is_active
+                                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                                  : 'bg-slate-100 text-slate-600'
+                              }`}
                             >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
+                              {d.is_active ? 'Aktif' : 'Nonaktif'}
+                            </span>
+                          </td>
+                          <td className="px-5 py-3.5 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                onClick={() => openEditModal('desa', d)}
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-sky-600 hover:bg-slate-100 transition"
+                                title="Edit Desa"
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() =>
+                                  setDeleteConfirm({
+                                    isOpen: true,
+                                    tab: 'desa',
+                                    id: dId,
+                                    title: `${d.tipe} ${d.nama_desa}`,
+                                  })
+                                }
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition"
+                                title="Hapus Desa"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>
@@ -1040,53 +1061,56 @@ export default function PengaturanWilayahPage() {
                       </td>
                     </tr>
                   ) : (
-                    filteredKodePos.map((kp) => (
-                      <tr key={kp.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition">
-                        <td className="px-5 py-3.5 font-mono font-bold text-base text-sky-600 dark:text-sky-400">
-                          {kp.kode_pos}
-                        </td>
-                        <td className="px-5 py-3.5 font-bold text-slate-900 dark:text-white">
-                          {kp.desa?.nama_desa || '-'}
-                        </td>
-                        <td className="px-5 py-3.5 text-slate-700 dark:text-slate-300">
-                          {kp.kecamatan?.nama_kecamatan || '-'}
-                        </td>
-                        <td className="px-5 py-3.5 text-slate-700 dark:text-slate-300">
-                          {kp.kabupaten ? `${kp.kabupaten.tipe} ${kp.kabupaten.nama_kabupaten}` : '-'}
-                        </td>
-                        <td className="px-5 py-3.5 text-slate-700 dark:text-slate-300">
-                          {kp.provinsi?.nama_provinsi || '-'}
-                        </td>
-                        <td className="px-5 py-3.5 text-slate-500 italic">
-                          {kp.keterangan || '-'}
-                        </td>
-                        <td className="px-5 py-3.5 text-right">
-                          <div className="flex items-center justify-end gap-1.5">
-                            <button
-                              onClick={() => openEditModal('kodepos', kp)}
-                              className="p-1.5 rounded-lg text-slate-500 hover:text-sky-600 hover:bg-slate-100 transition"
-                              title="Edit Kode Pos"
-                            >
-                              <Edit2 className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              onClick={() =>
-                                setDeleteConfirm({
-                                  isOpen: true,
-                                  tab: 'kodepos',
-                                  id: kp.id,
-                                  title: `Kode Pos ${kp.kode_pos}`,
-                                })
-                              }
-                              className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition"
-                              title="Hapus Kode Pos"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
+                    filteredKodePos.map((kp) => {
+                      const kpId = kp.kodepos_id ?? kp.id ?? 0;
+                      return (
+                        <tr key={kpId} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition">
+                          <td className="px-5 py-3.5 font-mono font-bold text-base text-sky-600 dark:text-sky-400">
+                            {kp.kode_pos}
+                          </td>
+                          <td className="px-5 py-3.5 font-bold text-slate-900 dark:text-white">
+                            {kp.desa?.nama_desa || '-'}
+                          </td>
+                          <td className="px-5 py-3.5 text-slate-700 dark:text-slate-300">
+                            {kp.kecamatan?.nama_kecamatan || '-'}
+                          </td>
+                          <td className="px-5 py-3.5 text-slate-700 dark:text-slate-300">
+                            {kp.kabupaten ? `${kp.kabupaten.tipe} ${kp.kabupaten.nama_kabupaten}` : '-'}
+                          </td>
+                          <td className="px-5 py-3.5 text-slate-700 dark:text-slate-300">
+                            {kp.provinsi?.nama_provinsi || '-'}
+                          </td>
+                          <td className="px-5 py-3.5 text-slate-500 italic">
+                            {kp.keterangan || '-'}
+                          </td>
+                          <td className="px-5 py-3.5 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                onClick={() => openEditModal('kodepos', kp)}
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-sky-600 hover:bg-slate-100 transition"
+                                title="Edit Kode Pos"
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() =>
+                                  setDeleteConfirm({
+                                    isOpen: true,
+                                    tab: 'kodepos',
+                                    id: kpId,
+                                    title: `Kode Pos ${kp.kode_pos}`,
+                                  })
+                                }
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition"
+                                title="Hapus Kode Pos"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>
@@ -1172,11 +1196,14 @@ export default function PengaturanWilayahPage() {
                       className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:outline-none focus:border-sky-500"
                     >
                       <option value="">Pilih Provinsi Induk</option>
-                      {provinsiList.map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.kode_provinsi} - {p.nama_provinsi}
-                        </option>
-                      ))}
+                      {provinsiList.map((p) => {
+                        const pId = p.provinsi_id ?? p.id;
+                        return (
+                          <option key={pId} value={pId}>
+                            {p.kode_provinsi} - {p.nama_provinsi}
+                          </option>
+                        );
+                      })}
                     </select>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
@@ -1237,11 +1264,14 @@ export default function PengaturanWilayahPage() {
                       className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:outline-none focus:border-sky-500"
                     >
                       <option value="">Pilih Kabupaten/Kota</option>
-                      {kabupatenList.map((k) => (
-                        <option key={k.id} value={k.id}>
-                          {k.tipe} {k.nama_kabupaten} ({k.provinsi?.nama_provinsi})
-                        </option>
-                      ))}
+                      {kabupatenList.map((k) => {
+                        const kId = k.kabupaten_id ?? k.id;
+                        return (
+                          <option key={kId} value={kId}>
+                            {k.tipe} {k.nama_kabupaten} ({k.provinsi?.nama_provinsi})
+                          </option>
+                        );
+                      })}
                     </select>
                   </div>
                   <div>
@@ -1287,11 +1317,14 @@ export default function PengaturanWilayahPage() {
                       className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:outline-none focus:border-sky-500"
                     >
                       <option value="">Pilih Kecamatan</option>
-                      {kecamatanList.map((kc) => (
-                        <option key={kc.id} value={kc.id}>
-                          Kec. {kc.nama_kecamatan}
-                        </option>
-                      ))}
+                      {kecamatanList.map((kc) => {
+                        const kcId = kc.kecamatan_id ?? kc.id;
+                        return (
+                          <option key={kcId} value={kcId}>
+                            Kec. {kc.nama_kecamatan}
+                          </option>
+                        );
+                      })}
                     </select>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
@@ -1379,11 +1412,14 @@ export default function PengaturanWilayahPage() {
                         className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:outline-none focus:border-sky-500"
                       >
                         <option value="">Pilih Provinsi</option>
-                        {provinsiList.map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {p.nama_provinsi}
-                          </option>
-                        ))}
+                        {provinsiList.map((p) => {
+                          const pId = p.provinsi_id ?? p.id;
+                          return (
+                            <option key={pId} value={pId}>
+                              {p.nama_provinsi}
+                            </option>
+                          );
+                        })}
                       </select>
                     </div>
                     <div>
@@ -1396,11 +1432,14 @@ export default function PengaturanWilayahPage() {
                         className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:outline-none focus:border-sky-500"
                       >
                         <option value="">Pilih Kab/Kota</option>
-                        {kabupatenList.map((k) => (
-                          <option key={k.id} value={k.id}>
-                            {k.tipe} {k.nama_kabupaten}
-                          </option>
-                        ))}
+                        {kabupatenList.map((k) => {
+                          const kId = k.kabupaten_id ?? k.id;
+                          return (
+                            <option key={kId} value={kId}>
+                              {k.tipe} {k.nama_kabupaten}
+                            </option>
+                          );
+                        })}
                       </select>
                     </div>
                   </div>

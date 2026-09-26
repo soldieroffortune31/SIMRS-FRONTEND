@@ -108,9 +108,11 @@ export default function PengaturanUsersPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
-                {filteredUsers.map((u) => (
+                {filteredUsers.map((u) => {
+                  const uId = u.user_id ?? u.id ?? 0;
+                  return (
                   <tr
-                    key={u.id}
+                    key={uId}
                     className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition"
                   >
                     <td className="px-5 py-3.5">
@@ -119,7 +121,7 @@ export default function PengaturanUsersPage() {
                           {u.nama_lengkap}
                         </span>
                         <span className="text-[10px] font-mono text-slate-400">
-                          #{u.id}
+                          #{uId}
                         </span>
                       </div>
                       <div className="text-[11px] text-slate-500 font-mono">
@@ -166,7 +168,8 @@ export default function PengaturanUsersPage() {
                       )}
                     </td>
                   </tr>
-                ))}
+                );
+                })}
               </tbody>
             </table>
           </div>

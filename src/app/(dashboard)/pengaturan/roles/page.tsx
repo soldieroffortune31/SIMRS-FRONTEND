@@ -89,7 +89,8 @@ export default function PengaturanRolesPage() {
     setIsSubmitting(true);
     try {
       if (editingRole) {
-        await masterApi.updateRole(editingRole.id, {
+        const roleId = editingRole.role_id ?? editingRole.id ?? 0;
+        await masterApi.updateRole(roleId, {
           kode_role: roleForm.kode_role.trim().toUpperCase(),
           nama_role: roleForm.nama_role.trim(),
           keterangan: roleForm.keterangan.trim() || undefined,
@@ -197,9 +198,11 @@ export default function PengaturanRolesPage() {
             </div>
 
             <div className="space-y-3">
-              {roles.map((r) => (
+              {roles.map((r) => {
+                const rId = r.role_id ?? r.id ?? 0;
+                return (
                 <div
-                  key={r.id}
+                  key={rId}
                   className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 flex items-center justify-between group hover:border-indigo-500/40 transition"
                 >
                   <div className="flex-1 mr-3">
@@ -211,7 +214,7 @@ export default function PengaturanRolesPage() {
                         {r.kode_role}
                       </span>
                       <span className="text-[10px] font-mono text-slate-400">
-                        #{r.id}
+                        #{rId}
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-500 mt-0.5 line-clamp-1">
@@ -228,7 +231,7 @@ export default function PengaturanRolesPage() {
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
                     <button
-                      onClick={() => setDeleteConfirm({ id: r.id, name: r.nama_role })}
+                      onClick={() => setDeleteConfirm({ id: rId, name: r.nama_role })}
                       className="p-1.5 rounded-lg text-rose-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
                       title="Hapus Role"
                     >
@@ -236,7 +239,8 @@ export default function PengaturanRolesPage() {
                     </button>
                   </div>
                 </div>
-              ))}
+              );
+              })}
             </div>
           </div>
 
@@ -253,9 +257,11 @@ export default function PengaturanRolesPage() {
             </div>
 
             <div className="space-y-3">
-              {modules.map((m) => (
+              {modules.map((m) => {
+                const mId = m.modul_id ?? m.id ?? 0;
+                return (
                 <div
-                  key={m.id}
+                  key={mId}
                   className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 flex items-center justify-between"
                 >
                   <div className="flex items-center gap-3">
@@ -271,7 +277,7 @@ export default function PengaturanRolesPage() {
                           {m.kode_modul}
                         </span>
                         <span className="text-[10px] font-mono text-slate-400">
-                          #{m.id}
+                          #{mId}
                         </span>
                       </div>
                       <p className="text-[11px] text-slate-500 mt-0.5">
@@ -283,7 +289,8 @@ export default function PengaturanRolesPage() {
                     {m.menus?.length || 0} Sub-Menu
                   </span>
                 </div>
-              ))}
+              );
+              })}
             </div>
           </div>
         </div>
@@ -296,7 +303,7 @@ export default function PengaturanRolesPage() {
             <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/60">
               <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <Shield className="w-4 h-4 text-indigo-600" />
-                {editingRole ? `Edit Role #${editingRole.id}` : 'Tambah Role Baru'}
+                {editingRole ? `Edit Role #${editingRole.role_id ?? editingRole.id}` : 'Tambah Role Baru'}
               </h3>
               <button
                 onClick={() => setIsRoleModalOpen(false)}

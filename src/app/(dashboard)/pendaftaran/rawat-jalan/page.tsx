@@ -253,8 +253,9 @@ export default function PendaftaranRawatJalanPage() {
   const [ruanganPoliklinikList, setRuanganPoliklinikList] = useState<any[]>([]);
   const [selectedRuanganId, setSelectedRuanganId] = useState<number | ''>(() => {
     // If active context is IRJ, default to active ruangan
-    if (activeContext?.instalasi.kode === 'IRJ' && activeContext.ruangan?.id) {
-      return activeContext.ruangan.id;
+    const activeRId = activeContext?.ruangan?.ruangan_id ?? activeContext?.ruangan?.id;
+    if (activeContext?.instalasi.kode === 'IRJ' && activeRId) {
+      return activeRId;
     }
     return 101; // default Poli Penyakit Dalam
   });
@@ -302,7 +303,8 @@ export default function PendaftaranRawatJalanPage() {
 
       if (res.data && res.data.length > 0) {
         setJadwalList(res.data);
-        setSelectedJadwalId(res.data[0].id);
+        const jId = res.data[0].jadwaldokter_id ?? res.data[0].jadwal_dokter_id ?? res.data[0].id ?? '';
+        setSelectedJadwalId(jId);
       } else {
         // Fallback: fetch any active schedule for this room
         const fallbackRes = await pendaftaranApi.getAllJadwalDokter({
@@ -311,7 +313,8 @@ export default function PendaftaranRawatJalanPage() {
         });
         if (fallbackRes.data && fallbackRes.data.length > 0) {
           setJadwalList(fallbackRes.data);
-          setSelectedJadwalId(fallbackRes.data[0].id);
+          const fId = fallbackRes.data[0].jadwaldokter_id ?? fallbackRes.data[0].jadwal_dokter_id ?? fallbackRes.data[0].id ?? '';
+          setSelectedJadwalId(fId);
         } else {
           setJadwalList([]);
           setSelectedJadwalId('');
@@ -371,6 +374,7 @@ export default function PendaftaranRawatJalanPage() {
       const payload: any = {
         tipe_pasien: tipePasien,
         jadwal_dokter_id: Number(selectedJadwalId),
+        jadwaldokter_id: Number(selectedJadwalId),
         tanggal_kunjungan: tanggalKunjungan,
         jenis_penjamin: jenisPenjamin,
         no_kartu_penjamin: noKartuPenjamin || null,
@@ -379,7 +383,7 @@ export default function PendaftaranRawatJalanPage() {
       };
 
       if (tipePasien === 'LAMA') {
-        payload.pasien_id = Number(selectedPasienLama!.id);
+        payload.pasien_id = Number(selectedPasienLama!.pasien_id ?? selectedPasienLama!.id);
       } else {
         payload.pasien_baru = {
           ...pasienBaruForm,
@@ -497,7 +501,8 @@ export default function PendaftaranRawatJalanPage() {
 
   const handleSpeakerCall = (item: PendaftaranRawatJalan) => {
     setCalledAudioPatient(item.no_antrean);
-    handleUpdateStatus(item.id, 'DIPANGGIL');
+    const pendId = item.pendaftaran_id ?? item.id ?? 0;
+    handleUpdateStatus(pendId, 'DIPANGGIL');
     setTimeout(() => {
       setCalledAudioPatient(null);
     }, 4500);
@@ -723,38 +728,41 @@ export default function PendaftaranRawatJalanPage() {
                   {/* Search Results Dropdown List */}
                   {pasienSearchResults.length > 0 && (
                     <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden divide-y divide-slate-100 dark:divide-slate-700 shadow-md">
-                      {pasienSearchResults.map((p) => (
-                        <div
-                          key={p.id}
-                          onClick={() => setSelectedPasienLama(p)}
-                          className="p-3.5 hover:bg-sky-50/70 dark:hover:bg-slate-700/50 cursor-pointer flex items-center justify-between transition"
-                        >
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              <span className="font-mono font-bold text-xs bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-300 px-2 py-0.5 rounded">
-                                {p.no_rm}
-                              </span>
-                              <span className="font-bold text-sm text-slate-900 dark:text-white">
-                                {p.nama_lengkap}
-                              </span>
-                              <span className="text-[11px] font-semibold text-slate-500">
-                                ({p.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan'})
-                              </span>
-                            </div>
-                            <div className="text-xs text-slate-500 flex items-center gap-3">
-                              <span>NIK: {p.nik || '-'}</span>
-                              <span>•</span>
-                              <span>Alamat: {p.alamat_lengkap}</span>
-                            </div>
-                          </div>
-                          <button
-                            type="button"
-                            className="px-3 py-1.5 rounded-lg bg-sky-600 text-white text-xs font-semibold hover:bg-sky-700 transition"
+                      {pasienSearchResults.map((p) => {
+                        const pId = p.pasien_id ?? p.id ?? 0;
+                        return (
+                          <div
+                            key={pId}
+                            onClick={() => setSelectedPasienLama(p)}
+                            className="p-3.5 hover:bg-sky-50/70 dark:hover:bg-slate-700/50 cursor-pointer flex items-center justify-between transition"
                           >
-                            Pilih Pasien
-                          </button>
-                        </div>
-                      ))}
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono font-bold text-xs bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-300 px-2 py-0.5 rounded">
+                                  {p.no_rm}
+                                </span>
+                                <span className="font-bold text-sm text-slate-900 dark:text-white">
+                                  {p.nama_lengkap}
+                                </span>
+                                <span className="text-[11px] font-semibold text-slate-500">
+                                  ({p.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan'})
+                                </span>
+                              </div>
+                              <div className="text-xs text-slate-500 flex items-center gap-3">
+                                <span>NIK: {p.nik || '-'}</span>
+                                <span>•</span>
+                                <span>Alamat: {p.alamat_lengkap}</span>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              className="px-3 py-1.5 rounded-lg bg-sky-600 text-white text-xs font-semibold hover:bg-sky-700 transition"
+                            >
+                              Pilih Pasien
+                            </button>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
 
@@ -1058,11 +1066,14 @@ export default function PendaftaranRawatJalanPage() {
                       className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs focus:outline-none focus:border-sky-500"
                     >
                       <option value="">Pilih Provinsi</option>
-                      {provinsiOptions.map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.nama_provinsi}
-                        </option>
-                      ))}
+                      {provinsiOptions.map((p) => {
+                        const pId = p.provinsi_id ?? p.id;
+                        return (
+                          <option key={pId} value={pId}>
+                            {p.nama_provinsi}
+                          </option>
+                        );
+                      })}
                     </select>
                   </div>
 
@@ -1086,11 +1097,14 @@ export default function PendaftaranRawatJalanPage() {
                       className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs focus:outline-none focus:border-sky-500 disabled:opacity-50"
                     >
                       <option value="">Pilih Kab/Kota</option>
-                      {kabupatenOptions.map((k) => (
-                        <option key={k.id} value={k.id}>
-                          {k.tipe} {k.nama_kabupaten}
-                        </option>
-                      ))}
+                      {kabupatenOptions.map((k) => {
+                        const kId = k.kabupaten_id ?? k.id;
+                        return (
+                          <option key={kId} value={kId}>
+                            {k.tipe} {k.nama_kabupaten}
+                          </option>
+                        );
+                      })}
                     </select>
                   </div>
 
@@ -1113,11 +1127,14 @@ export default function PendaftaranRawatJalanPage() {
                       className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs focus:outline-none focus:border-sky-500 disabled:opacity-50"
                     >
                       <option value="">Pilih Kecamatan</option>
-                      {kecamatanOptions.map((kc) => (
-                        <option key={kc.id} value={kc.id}>
-                          {kc.nama_kecamatan}
-                        </option>
-                      ))}
+                      {kecamatanOptions.map((kc) => {
+                        const kcId = kc.kecamatan_id ?? kc.id;
+                        return (
+                          <option key={kcId} value={kcId}>
+                            {kc.nama_kecamatan}
+                          </option>
+                        );
+                      })}
                     </select>
                   </div>
 
@@ -1131,7 +1148,7 @@ export default function PendaftaranRawatJalanPage() {
                       disabled={!pasienBaruForm.kecamatan_id}
                       onChange={(e) => {
                         const val = e.target.value ? Number(e.target.value) : '';
-                        const selectedDesa = desaOptions.find((d) => d.id === val);
+                        const selectedDesa = desaOptions.find((d) => (d.desa_id ?? d.id) === val);
                         setPasienBaruForm({
                           ...pasienBaruForm,
                           desa_id: val,
@@ -1141,11 +1158,14 @@ export default function PendaftaranRawatJalanPage() {
                       className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs focus:outline-none focus:border-sky-500 disabled:opacity-50"
                     >
                       <option value="">Pilih Desa/Kelurahan</option>
-                      {desaOptions.map((d) => (
-                        <option key={d.id} value={d.id}>
-                          {d.tipe} {d.nama_desa}
-                        </option>
-                      ))}
+                      {desaOptions.map((d) => {
+                        const dId = d.desa_id ?? d.id;
+                        return (
+                          <option key={dId} value={dId}>
+                            {d.tipe} {d.nama_desa}
+                          </option>
+                        );
+                      })}
                     </select>
                   </div>
 
@@ -1293,11 +1313,14 @@ export default function PendaftaranRawatJalanPage() {
                   onChange={(e) => setSelectedRuanganId(Number(e.target.value))}
                   className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs focus:outline-none focus:border-sky-500"
                 >
-                  {ruanganPoliklinikList.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {r.nama_ruangan} ({r.kode_ruangan})
-                    </option>
-                  ))}
+                  {ruanganPoliklinikList.map((r) => {
+                    const rId = r.ruangan_id ?? r.id;
+                    return (
+                      <option key={rId} value={rId}>
+                        {r.nama_ruangan} ({r.kode_ruangan})
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
 
@@ -1322,11 +1345,14 @@ export default function PendaftaranRawatJalanPage() {
                     onChange={(e) => setSelectedJadwalId(Number(e.target.value))}
                     className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-sky-500"
                   >
-                    {jadwalList.map((j) => (
-                      <option key={j.id} value={j.id}>
-                        {j.dokter?.nama_lengkap || 'Dokter'} ({j.hari}, {j.jam_mulai} - {j.jam_selesai}) [Kuota: {j.kuota_pasien}]
-                      </option>
-                    ))}
+                    {jadwalList.map((j) => {
+                      const jId = j.jadwaldokter_id ?? j.jadwal_dokter_id ?? j.id;
+                      return (
+                        <option key={jId} value={jId}>
+                          {j.dokter?.nama_lengkap || 'Dokter'} ({j.hari}, {j.jam_mulai} - {j.jam_selesai}) [Kuota: {j.kuota_pasien}]
+                        </option>
+                      );
+                    })}
                   </select>
                 )}
               </div>
@@ -1470,8 +1496,10 @@ export default function PendaftaranRawatJalanPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
-                    {todayQueueList.map((item) => (
-                      <tr key={item.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition">
+                    {todayQueueList.map((item) => {
+                      const pendId = item.pendaftaran_id ?? item.id ?? 0;
+                      return (
+                      <tr key={pendId} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition">
                         <td className="px-5 py-3.5 font-mono font-black text-sm text-sky-600 dark:text-sky-400">
                           {item.no_antrean}
                         </td>
@@ -1537,7 +1565,7 @@ export default function PendaftaranRawatJalanPage() {
                             {/* Status changer */}
                             {item.status_antrean !== 'SELESAI' && item.status_antrean !== 'BATAL' && (
                               <button
-                                onClick={() => handleUpdateStatus(item.id, 'SEDANG_DILAYANI')}
+                                onClick={() => handleUpdateStatus(pendId, 'SEDANG_DILAYANI')}
                                 className="px-2.5 py-1 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-semibold transition"
                                 title="Mulai Layani"
                               >
@@ -1547,7 +1575,7 @@ export default function PendaftaranRawatJalanPage() {
 
                             {item.status_antrean === 'SEDANG_DILAYANI' && (
                               <button
-                                onClick={() => handleUpdateStatus(item.id, 'SELESAI')}
+                                onClick={() => handleUpdateStatus(pendId, 'SELESAI')}
                                 className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition"
                                 title="Selesai Pelayanan"
                               >
@@ -1557,7 +1585,8 @@ export default function PendaftaranRawatJalanPage() {
                           </div>
                         </td>
                       </tr>
-                    ))}
+                    );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -1619,47 +1648,50 @@ export default function PendaftaranRawatJalanPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
-                    {allPasienList.map((p) => (
-                      <tr key={p.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition">
-                        <td className="px-5 py-3.5 font-mono font-black text-sky-600 dark:text-sky-400">
-                          {p.no_rm}
-                        </td>
-                        <td className="px-5 py-3.5 font-mono text-slate-600 dark:text-slate-400">
-                          {p.nik || '-'}
-                        </td>
-                        <td className="px-5 py-3.5 font-bold text-slate-900 dark:text-white">
-                          {p.nama_lengkap}
-                        </td>
-                        <td className="px-5 py-3.5 text-slate-700 dark:text-slate-300">
-                          {p.jenis_kelamin === 'L' ? 'L' : 'P'} / {p.tanggal_lahir}
-                        </td>
-                        <td className="px-5 py-3.5 text-slate-600 dark:text-slate-400 max-w-xs truncate">
-                          {p.alamat_lengkap}
-                        </td>
-                        <td className="px-5 py-3.5 text-slate-600 dark:text-slate-400">
-                          {p.desa?.nama_desa ? `${p.desa.nama_desa}, ` : ''}
-                          {p.kabupaten?.nama_kabupaten || '-'} ({p.kode_pos || '-'})
-                        </td>
-                        <td className="px-5 py-3.5">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                            {p.jenis_penjamin_default || 'UMUM'}
-                          </span>
-                        </td>
-                        <td className="px-5 py-3.5 text-right">
-                          <button
-                            onClick={() => {
-                              setSelectedPasienLama(p);
-                              setTipePasien('LAMA');
-                              setActiveMainTab('registrasi');
-                            }}
-                            className="px-2.5 py-1 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-semibold transition"
-                            title="Daftarkan Kunjungan untuk Pasien Ini"
-                          >
-                            Daftarkan Kunjungan
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                    {allPasienList.map((p) => {
+                      const pId = p.pasien_id ?? p.id;
+                      return (
+                        <tr key={pId} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition">
+                          <td className="px-5 py-3.5 font-mono font-black text-sky-600 dark:text-sky-400">
+                            {p.no_rm}
+                          </td>
+                          <td className="px-5 py-3.5 font-mono text-slate-600 dark:text-slate-400">
+                            {p.nik || '-'}
+                          </td>
+                          <td className="px-5 py-3.5 font-bold text-slate-900 dark:text-white">
+                            {p.nama_lengkap}
+                          </td>
+                          <td className="px-5 py-3.5 text-slate-700 dark:text-slate-300">
+                            {p.jenis_kelamin === 'L' ? 'L' : 'P'} / {p.tanggal_lahir}
+                          </td>
+                          <td className="px-5 py-3.5 text-slate-600 dark:text-slate-400 max-w-xs truncate">
+                            {p.alamat_lengkap}
+                          </td>
+                          <td className="px-5 py-3.5 text-slate-600 dark:text-slate-400">
+                            {p.desa?.nama_desa ? `${p.desa.nama_desa}, ` : ''}
+                            {p.kabupaten?.nama_kabupaten || '-'} ({p.kode_pos || '-'})
+                          </td>
+                          <td className="px-5 py-3.5">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                              {p.jenis_penjamin_default || 'UMUM'}
+                            </span>
+                          </td>
+                          <td className="px-5 py-3.5 text-right">
+                            <button
+                              onClick={() => {
+                                setSelectedPasienLama(p);
+                                setTipePasien('LAMA');
+                                setActiveMainTab('registrasi');
+                              }}
+                              className="px-2.5 py-1 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-semibold transition"
+                              title="Daftarkan Kunjungan untuk Pasien Ini"
+                            >
+                              Daftarkan Kunjungan
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

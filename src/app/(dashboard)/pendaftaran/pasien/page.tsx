@@ -73,7 +73,7 @@ export default function DataPasienPage() {
       await pendaftaranApi.deletePasien(deleteConfirm.id);
       showToast(`Data pasien ${deleteConfirm.nama_lengkap} (${deleteConfirm.no_rm}) berhasil dinonaktifkan/dihapus.`);
       setDeleteConfirm(null);
-      if (inspectedPasien?.id === deleteConfirm.id) {
+      if ((inspectedPasien?.pasien_id ?? inspectedPasien?.id) === deleteConfirm.id) {
         setInspectedPasien(null);
       }
       fetchPasien();
@@ -191,14 +191,16 @@ export default function DataPasienPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
-                {pasienList.map((p) => (
-                  <tr key={p.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition">
+                {pasienList.map((p) => {
+                  const pasienId = p.pasien_id ?? p.id ?? 0;
+                  return (
+                  <tr key={pasienId} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition">
                     <td className="px-5 py-3.5">
                       <div className="font-mono font-black text-sky-600 dark:text-sky-400 text-sm">
                         {p.no_rm}
                       </div>
                       <div className="text-[10px] font-mono text-slate-400">
-                        ID: #{p.id}
+                        ID: #{pasienId}
                       </div>
                     </td>
                     <td className="px-5 py-3.5 font-mono text-slate-600 dark:text-slate-400">
@@ -249,7 +251,7 @@ export default function DataPasienPage() {
                         <button
                           onClick={() =>
                             setDeleteConfirm({
-                              id: p.id,
+                              id: pasienId,
                               no_rm: p.no_rm,
                               nama_lengkap: p.nama_lengkap,
                             })
@@ -262,7 +264,8 @@ export default function DataPasienPage() {
                       </div>
                     </td>
                   </tr>
-                ))}
+                );
+                })}
               </tbody>
             </table>
           </div>
@@ -287,7 +290,7 @@ export default function DataPasienPage() {
                       No. RM: {inspectedPasien.no_rm}
                     </span>
                     <span className="text-[10px] font-mono text-slate-400">
-                      (ID: #{inspectedPasien.id})
+                      (ID: #{inspectedPasien.pasien_id ?? inspectedPasien.id})
                     </span>
                   </div>
                 </div>

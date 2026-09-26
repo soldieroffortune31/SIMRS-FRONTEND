@@ -40,9 +40,9 @@ export default function LoginPage() {
     try {
       await login(username, password);
     } catch (err: any) {
-      console.error('Login error:', err);
       const msg =
         err.response?.data?.message ||
+        err.message ||
         'Gagal masuk. Pastikan backend aktif dan kredensial benar.';
       setErrorMsg(msg);
     } finally {
